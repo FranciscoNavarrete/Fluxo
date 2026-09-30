@@ -3,8 +3,8 @@
   "provider": "dotnet",
   "steps": {
     "install": {
-      "inputs": [{ "local": true }],
       "commands": [
+        { "src": ".", "dest": "." },
         "dotnet restore WebApp/CobrosRecurrentes.WebApp.csproj",
         "dotnet restore MigrationRunner/CobrosRecurrentes.MigrationRunner.csproj"
       ]
