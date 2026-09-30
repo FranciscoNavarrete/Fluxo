@@ -145,7 +145,7 @@ public class MpSuscripcionRepository : IMpSuscripcionRepository
             INNER JOIN MpPlanes p ON p.MpPlanId  = s.MpPlanId
             {where}
             ORDER BY s.FechaHoraCreacion DESC
-            OFFSET @Offset ROWS FETCH NEXT @TamanioPagina ROWS ONLY
+            LIMIT @TamanioPagina OFFSET @Offset
             """;
 
         string sqlCount = $"""
@@ -172,7 +172,7 @@ public class MpSuscripcionRepository : IMpSuscripcionRepository
         const string sql = """
             SELECT * FROM MpSuscripciones
             WHERE Estado IN ('authorized', 'paused')
-              AND ProximoCobro < GETUTCDATE()
+              AND proximocobro < NOW()
               AND FechaCancelacion IS NULL
             """;
         return await _db.QueryAsync<MpSuscripcion>(sql);

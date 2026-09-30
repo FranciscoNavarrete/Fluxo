@@ -1,30 +1,18 @@
--- ============================================================
--- Prerrequisito: tabla Clientes mínima para que funcionen las FKs.
--- En el sistema existente esta tabla ya existe — este script es
--- solo para la solución standalone / entorno de desarrollo.
--- ============================================================
+CREATE TABLE IF NOT EXISTS clientes (
+    clienteid           SERIAL          NOT NULL,
+    nombre              VARCHAR(200)    NOT NULL,
+    email               VARCHAR(256)    NOT NULL,
+    activo              BOOLEAN         NOT NULL DEFAULT TRUE,
+    fechahoracreacion   TIMESTAMP       NOT NULL DEFAULT NOW(),
 
-IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'Clientes')
-BEGIN
-    CREATE TABLE Clientes
-    (
-        ClienteId                   INT             NOT NULL IDENTITY(1,1),
-        Nombre                      NVARCHAR(200)   NOT NULL,
-        Email                       NVARCHAR(256)   NOT NULL,
-        Activo                      BIT             NOT NULL CONSTRAINT DF_Clientes_Activo DEFAULT (1),
-        FechaHoraCreacion           DATETIME2       NOT NULL CONSTRAINT DF_Clientes_FechaCreacion DEFAULT (GETUTCDATE()),
+    CONSTRAINT pk_clientes       PRIMARY KEY (clienteid),
+    CONSTRAINT uq_clientes_email UNIQUE (email)
+);
 
-        CONSTRAINT PK_Clientes       PRIMARY KEY CLUSTERED (ClienteId),
-        CONSTRAINT UQ_Clientes_Email UNIQUE (Email)
-    );
+INSERT INTO clientes (nombre, email)
+SELECT 'Cliente Demo 1', 'demo1@ejemplo.com'
+WHERE NOT EXISTS (SELECT 1 FROM clientes WHERE email = 'demo1@ejemplo.com');
 
-    -- Datos de prueba
-    INSERT INTO Clientes (Nombre, Email) VALUES
-        ('Cliente Demo 1', 'demo1@ejemplo.com'),
-        ('Cliente Demo 2', 'demo2@ejemplo.com');
-
-    PRINT 'Tabla Clientes (stub) creada con datos de prueba.';
-END
-ELSE
-    PRINT 'Tabla Clientes ya existe — omitida.';
-GO
+INSERT INTO clientes (nombre, email)
+SELECT 'Cliente Demo 2', 'demo2@ejemplo.com'
+WHERE NOT EXISTS (SELECT 1 FROM clientes WHERE email = 'demo2@ejemplo.com');

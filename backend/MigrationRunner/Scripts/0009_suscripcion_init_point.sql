@@ -1,2 +1,1 @@
-ALTER TABLE MpSuscripciones
-    ADD InitPoint NVARCHAR(500) NULL;
+ALTER TABLE mpsuscripciones ADD COLUMN IF NOT EXISTS initpoint VARCHAR(500);

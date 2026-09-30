@@ -28,8 +28,8 @@ public class MpPlanRepository : IMpPlanRepository
     public async Task<MpPlan?> ObtenerPorMpExternoIdAsync(string mpPlanExternoId)
     {
         const string sql = """
-            SELECT * FROM MpPlanes
-            WHERE MpPlanExternoId = @MpPlanExternoId AND Activo = 1
+            SELECT * FROM mpplanes
+            WHERE mpplanexternoid = @MpPlanExternoId AND activo = TRUE
             """;
         return await _db.QueryFirstOrDefaultAsync<MpPlan>(sql, new { MpPlanExternoId = mpPlanExternoId });
     }
@@ -41,8 +41,8 @@ public class MpPlanRepository : IMpPlanRepository
                 MpPlanId, Nombre, Descripcion, Monto, Moneda,
                 TipoFrecuencia, Frecuencia, DiasGratis,
                 MpPlanExternoId, Activo, FechaHoraCreacion, UsuarioCreacionId
-            FROM MpPlanes
-            WHERE Activo = 1
+            FROM mpplanes
+            WHERE activo = TRUE
             ORDER BY Nombre
             """;
         return await _db.QueryAsync<MpPlanDto>(sql);

@@ -18,11 +18,11 @@ var connectionString = args.Length > 0
 Console.WriteLine($"Conectando a: {MaskPassword(connectionString)}");
 
 // Crear la base de datos si no existe
-EnsureDatabase.For.SqlDatabase(connectionString);
+EnsureDatabase.For.PostgresqlDatabase(connectionString);
 
 // Ejecutar scripts embebidos en orden alfanumérico
 var upgrader = DeployChanges.To
-    .SqlDatabase(connectionString)
+    .PostgresqlDatabase(connectionString)
     .WithScriptsEmbeddedInAssembly(Assembly.GetExecutingAssembly())
     .WithVariablesDisabled()   // evita que $ en strings SQL sean tratados como variables
     .LogToConsole()

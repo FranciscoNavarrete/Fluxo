@@ -5,7 +5,7 @@ using DataAccess;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Data.SqlClient;
+using Npgsql;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using UnitOfWork;
@@ -26,7 +26,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
     ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection no configurado.");
 
 builder.Services.AddScoped<IUnitOfWork>(_ =>
-    new DataAccessUnitOfWork(new SqlConnection(connectionString)));
+    new DataAccessUnitOfWork(new NpgsqlConnection(connectionString)));
 
 // ----------------------------------------------------------------
 // Auth standalone

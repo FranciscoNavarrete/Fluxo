@@ -25,7 +25,7 @@ public class ClienteRepository : IClienteRepository
 
     public Task<Cliente?> ObtenerPorEmailAsync(string email)
         => _db.QueryFirstOrDefaultAsync<Cliente>(
-            "SELECT * FROM Clientes WHERE Email = @Email AND Activo = 1",
+            "SELECT * FROM clientes WHERE email = @Email AND activo = TRUE",
             new { Email = email });
 
     public async Task<bool> ExisteEmailAsync(string email)

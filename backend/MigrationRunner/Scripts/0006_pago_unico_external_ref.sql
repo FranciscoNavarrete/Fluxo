@@ -1,6 +1,3 @@
-ALTER TABLE MpPagosUnicos
-ADD ExternalReference NVARCHAR(100) NULL;
-GO
+ALTER TABLE mppagosunicos ADD COLUMN IF NOT EXISTS externalreference VARCHAR(100);
 
-CREATE INDEX IX_MpPagosUnicos_ExternalReference ON MpPagosUnicos(ExternalReference);
-GO
+CREATE INDEX IF NOT EXISTS ix_mppagosunicos_externalreference ON mppagosunicos (externalreference);
