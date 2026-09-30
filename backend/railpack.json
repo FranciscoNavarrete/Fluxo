@@ -3,7 +3,11 @@
   "provider": "dotnet",
   "steps": {
     "install": {
-      "commands": ["mkdir -p /root/.nuget/packages"]
+      "inputs": [{ "local": true }],
+      "commands": [
+        "dotnet restore WebApp/CobrosRecurrentes.WebApp.csproj",
+        "dotnet restore MigrationRunner/CobrosRecurrentes.MigrationRunner.csproj"
+      ]
     },
     "build": {
       "commands": [
