@@ -14,6 +14,10 @@ using WebApp.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var railwayPort = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(railwayPort))
+    builder.WebHost.UseUrls($"http://+:{railwayPort}");
+
 // ----------------------------------------------------------------
 // Base de datos — la conexión se crea una sola vez (Singleton UoW)
 // Dapper abre/cierra conexiones por query usando el pool de SqlClient
@@ -118,11 +122,6 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddControllers();
-
-// ----------------------------------------------------------------
-// AWS Lambda Hosting (ignorado en local, activo en Lambda)
-// ----------------------------------------------------------------
-builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
 
 // ================================================================
 var app = builder.Build();
