@@ -15,4 +15,8 @@ public interface IAuthLogic
     Task<RespuestaResultado<PerfilDto>>           ActualizarPerfilAsync(int clienteId, ActualizarPerfilRequest request);
     Task<RespuestaResultado<SolicitarResetDto>>   SolicitarResetAsync(string email);
     Task<RespuestaResultado<object>>              ResetPasswordAsync(string token, string nuevaPassword);
+
+    /// <summary>Usuario reservado (rol SISTEMA) para atribuir acciones hechas por integraciones
+    /// externas (ej. GestorPOS) en vez de un admin humano. Se crea la primera vez que se necesita.</summary>
+    Task<int> ObtenerOCrearUsuarioSistemaIdAsync();
 }

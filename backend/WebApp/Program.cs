@@ -134,6 +134,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors();
 app.UseMiddleware<ExceptionMiddleware>();
+app.UseMiddleware<WebApp.Middleware.VendedorApiKeyMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

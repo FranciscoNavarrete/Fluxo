@@ -1,11 +1,14 @@
 #!/bin/zsh
-# Levanta todo el entorno de desarrollo: Colima + SQL Server + ngrok + API
+# Solo para desarrollo LOCAL — nunca se usa en Railway (ver nixpacks.toml,
+# que arranca la API directo con `dotnet`, sin Docker/Colima/ngrok).
+# NOTA: el backend ya migró a Postgres — este script todavía levanta SQL Server
+# por Docker, quedó desactualizado con la migración y hay que revisarlo aparte.
 
 export PATH="/opt/homebrew/bin:$PATH"
 export DOTNET_ROOT="$HOME/.dotnet"
 export PATH="$PATH:$HOME/.dotnet"
 
-PROYECTO="/Users/francisco/Documents/Proyectos/back-end"
+PROYECTO="/Users/francisco/Documents/Proyectos/Fluxo/backend"
 
 echo "→ Iniciando Colima..."
 if ! colima status 2>/dev/null | grep -q "Running"; then

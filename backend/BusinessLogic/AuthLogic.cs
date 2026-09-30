@@ -369,6 +369,28 @@ public class AuthLogic : IAuthLogic
         };
     }
 
+    private const string EmailUsuarioSistema = "sistema@fluxo.internal";
+
+    // ── Usuario reservado para integraciones (ej. GestorPOS) ───────────────
+    public async Task<int> ObtenerOCrearUsuarioSistemaIdAsync()
+    {
+        var existente = await _uow.Usuario.ObtenerPorEmailAsync(EmailUsuarioSistema);
+        if (existente is not null) return existente.UsuarioId;
+
+        var usuario = new Usuario
+        {
+            Email               = EmailUsuarioSistema,
+            // Nunca se loguea con password — solo se usa su Id para auditoría de acciones
+            // hechas por integraciones externas autenticadas con API key.
+            PasswordHash        = BCrypt.Net.BCrypt.HashPassword(GenerarPasswordAleatorio(), workFactor: 12),
+            Rol                 = "SISTEMA",
+            Activo              = true,
+            DebeCambiarPassword = false,
+            FechaHoraCreacion   = DateTime.UtcNow,
+        };
+        return await _uow.Usuario.InsertAsync(usuario);
+    }
+
     private static string GenerarPasswordAleatorio()
     {
         const string chars = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#";
