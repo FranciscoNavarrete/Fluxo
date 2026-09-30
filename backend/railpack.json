@@ -6,7 +6,8 @@
       "commands": [
         { "src": ".", "dest": "." },
         "dotnet restore WebApp/CobrosRecurrentes.WebApp.csproj",
-        "dotnet restore MigrationRunner/CobrosRecurrentes.MigrationRunner.csproj"
+        "dotnet restore MigrationRunner/CobrosRecurrentes.MigrationRunner.csproj",
+        "mkdir -p /app/obj"
       ]
     },
     "build": {
