@@ -19,7 +19,7 @@
   },
   "deploy": {
     "base": { "image": "mcr.microsoft.com/dotnet/aspnet:8.0" },
-    "inputs": [{ "step": "build" }],
+    "inputs": [{ "step": "build", "include": ["."] }],
     "startCommand": "dotnet /app/migrations/CobrosRecurrentes.MigrationRunner.dll && dotnet /app/out/CobrosRecurrentes.WebApp.dll"
   }
 }
