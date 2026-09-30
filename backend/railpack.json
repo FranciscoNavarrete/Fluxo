@@ -3,7 +3,7 @@
   "provider": "dotnet",
   "steps": {
     "install": {
-      "commands": ["true"]
+      "commands": ["mkdir -p /root/.nuget/packages"]
     },
     "build": {
       "commands": [
