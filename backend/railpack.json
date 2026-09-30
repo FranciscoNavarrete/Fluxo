@@ -1,0 +1,15 @@
+{
+  "$schema": "https://schema.railpack.com",
+  "provider": "dotnet",
+  "steps": {
+    "build": {
+      "commands": [
+        "dotnet publish WebApp/CobrosRecurrentes.WebApp.csproj -c Release -o /app/out",
+        "dotnet publish MigrationRunner/CobrosRecurrentes.MigrationRunner.csproj -c Release -o /app/migrations"
+      ]
+    }
+  },
+  "deploy": {
+    "startCommand": "dotnet /app/migrations/CobrosRecurrentes.MigrationRunner.dll && dotnet /app/out/CobrosRecurrentes.WebApp.dll"
+  }
+}
