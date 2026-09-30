@@ -1,0 +1,24 @@
+# ── Frontend ──────────────────────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# ── Backend ───────────────────────────────────────────
+**/bin/
+**/obj/
+.vs/
+*.user
+*.suo
+backend/WebApp/appsettings.Development.json
+backend/WebApp/appsettings.Production.json
+backend/WebApp/appsettings.Staging.json
+**/secrets.json
+
+# ── General ───────────────────────────────────────────
+.env
+.env.*
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

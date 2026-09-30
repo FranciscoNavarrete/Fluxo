@@ -1,0 +1,25 @@
+# Build output
+**/bin/
+**/obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Secrets / environment
+appsettings.Development.json
+appsettings.Production.json
+appsettings.Staging.json
+**/secrets.json
+
+# Logs
+*.log
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

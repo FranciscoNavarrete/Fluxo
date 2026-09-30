@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(grep -E \"\\\\.\\(html|scss\\)$\")",
+      "Bash(ng version *)",
+      "Bash(mkdir -p /Users/francisco/Documents/Proyectos/Kukas/kukas-frontend/src/app/features/dashboard/depositar-dialog /Users/francisco/Documents/Proyectos/Kukas/kukas-frontend/src/app/features/dashboard/retirar-dialog && echo \"OK\")",
+      "Read(//Users/francisco/Documents/Proyectos/SaaS-Petshop/backend/**)",
+      "Bash(dotnet new *)",
+      "Bash(dotnet sln *)",
+      "Bash(dotnet add *)",
+      "Bash(rm src/Gestor.Domain/Class1.cs)",
+      "Bash(rm src/Gestor.Application/Class1.cs)",
+      "Bash(rm src/Gestor.Infrastructure/Class1.cs)",
+      "Bash(pkill -f \"Gestor.WebAPI\")",
+      "mcp__visualize__show_widget",
+      "Bash(cat /Users/francisco/Documents/Proyectos/back-end/CobrosRecurrentes.sln)",
+      "Bash(cp CobrosRecurrentes.sln Fluxo.sln)",
+      "Bash(rm CobrosRecurrentes.sln)"
+    ]
+  }
+}

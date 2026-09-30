@@ -1,0 +1,35 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "gestor-app",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "/Users/francisco/Documents/Proyectos/SaaS-Petshop/frontend/gestor-app", "start", "--", "--port", "4200"],
+      "port": 4200
+    },
+    {
+      "name": "fysis-web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "/Users/francisco/Documents/Proyectos/fysis-web", "start", "--", "--port", "4200"],
+      "port": 4200
+    }
+    ,{
+      "name": "travel-ar-frontend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "/Users/francisco/Documents/Proyectos/travel-ar/frontend", "run", "dev"],
+      "port": 5173
+    }
+    ,{
+      "name": "num-7dias-preview",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--yes", "serve", "-l", "4321", "/Users/francisco/Documents/Proyectos/front-end/.preview-num"],
+      "port": 4321
+    }
+    ,{
+      "name": "gestorpos-frontend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "/Users/francisco/Documents/Proyectos/GestorPOS/frontend/gestorpos-app", "start", "--", "--port", "4300"],
+      "port": 4300
+    }
+  ]
+}

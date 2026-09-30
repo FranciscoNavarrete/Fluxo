@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>MigrationRunner</RootNamespace>
+    <AssemblyName>CobrosRecurrentes.MigrationRunner</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="dbup-sqlserver"                              Version="5.0.40" />
+    <PackageReference Include="Microsoft.Extensions.Configuration"          Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json"     Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
+  </ItemGroup>
+
+  <!-- Scripts SQL como recursos embebidos (dbup los ejecuta en orden alfabético) -->
+  <ItemGroup>
+    <EmbeddedResource Include="Scripts\**\*.sql" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,58 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34330.188
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CobrosRecurrentes.Models", "Models\CobrosRecurrentes.Models.csproj", "{139D4606-3F87-40CC-8374-C6F48DED7003}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CobrosRecurrentes.Repositories", "Repositories\CobrosRecurrentes.Repositories.csproj", "{EA52DBB7-41BD-45CB-8141-F96B508BFEA2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CobrosRecurrentes.UnitOfWork", "UnitOfWork\CobrosRecurrentes.UnitOfWork.csproj", "{85F83781-00AE-456D-BD08-CD2A9A10BFD5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CobrosRecurrentes.DataAccess", "DataAccess\CobrosRecurrentes.DataAccess.csproj", "{B1464CD5-6FBE-4875-9459-60C3779B28F2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CobrosRecurrentes.BusinessLogic", "BusinessLogic\CobrosRecurrentes.BusinessLogic.csproj", "{7F60437C-F3AF-424C-9BAA-FA0554527A3A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CobrosRecurrentes.WebApp", "WebApp\CobrosRecurrentes.WebApp.csproj", "{672A51CB-06D8-467F-81E3-3663A139B99B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CobrosRecurrentes.MigrationRunner", "MigrationRunner\CobrosRecurrentes.MigrationRunner.csproj", "{9555C678-897D-42DF-B33A-9E280A468BB9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{139D4606-3F87-40CC-8374-C6F48DED7003}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{139D4606-3F87-40CC-8374-C6F48DED7003}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{139D4606-3F87-40CC-8374-C6F48DED7003}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{139D4606-3F87-40CC-8374-C6F48DED7003}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA52DBB7-41BD-45CB-8141-F96B508BFEA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA52DBB7-41BD-45CB-8141-F96B508BFEA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA52DBB7-41BD-45CB-8141-F96B508BFEA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA52DBB7-41BD-45CB-8141-F96B508BFEA2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{85F83781-00AE-456D-BD08-CD2A9A10BFD5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85F83781-00AE-456D-BD08-CD2A9A10BFD5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85F83781-00AE-456D-BD08-CD2A9A10BFD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{85F83781-00AE-456D-BD08-CD2A9A10BFD5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1464CD5-6FBE-4875-9459-60C3779B28F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1464CD5-6FBE-4875-9459-60C3779B28F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1464CD5-6FBE-4875-9459-60C3779B28F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1464CD5-6FBE-4875-9459-60C3779B28F2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F60437C-F3AF-424C-9BAA-FA0554527A3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F60437C-F3AF-424C-9BAA-FA0554527A3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F60437C-F3AF-424C-9BAA-FA0554527A3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F60437C-F3AF-424C-9BAA-FA0554527A3A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{672A51CB-06D8-467F-81E3-3663A139B99B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{672A51CB-06D8-467F-81E3-3663A139B99B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{672A51CB-06D8-467F-81E3-3663A139B99B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{672A51CB-06D8-467F-81E3-3663A139B99B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9555C678-897D-42DF-B33A-9E280A468BB9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9555C678-897D-42DF-B33A-9E280A468BB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9555C678-897D-42DF-B33A-9E280A468BB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9555C678-897D-42DF-B33A-9E280A468BB9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

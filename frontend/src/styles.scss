@@ -1,0 +1,205 @@
+@use '@angular/material' as mat;
+@include mat.core();
+
+$fluxo-primary: mat.define-palette(mat.$indigo-palette, 700, 400, 900);
+$fluxo-accent:  mat.define-palette(mat.$green-palette,  600, 300, 800);
+$fluxo-warn:    mat.define-palette(mat.$red-palette);
+
+$fluxo-theme: mat.define-light-theme((
+  color: (
+    primary: $fluxo-primary,
+    accent:  $fluxo-accent,
+    warn:    $fluxo-warn,
+  ),
+  typography: mat.define-typography-config(),
+  density: 0,
+));
+
+@include mat.all-component-themes($fluxo-theme);
+
+// ── Dark theme ───────────────────────────────────────────────────────────────
+$fluxo-dark-theme: mat.define-dark-theme((
+  color: (
+    primary: $fluxo-primary,
+    accent:  $fluxo-accent,
+    warn:    $fluxo-warn,
+  ),
+  typography: mat.define-typography-config(),
+  density: 0,
+));
+
+.dark {
+  @include mat.all-component-colors($fluxo-dark-theme);
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background-color: #f5f5f5;
+}
+
+html.dark, html.dark body {
+  background-color: #080f1e;
+  color: #e2e8f0;
+  color-scheme: dark;
+}
+
+// ── Dark theme: overrides globales de Angular Material ───────────────────────
+.dark {
+  // ── Cards ──────────────────────────────────────────────────────────────────
+  .mat-mdc-card {
+    --mdc-elevated-card-container-color: #0f1e3d;
+    background-color: #0f1e3d !important;
+    border: 1px solid rgba(99, 102, 241, 0.18) !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important;
+  }
+  .mat-mdc-card-title   { color: #e2e8f0 !important; }
+  .mat-mdc-card-subtitle { color: #7c8ba6 !important; }
+
+  // ── Table ──────────────────────────────────────────────────────────────────
+  .mat-mdc-table { background: transparent !important; }
+  .mdc-data-table__row:last-child .mdc-data-table__cell { border-bottom: none; }
+  th.mat-header-cell {
+    color: #7c8ba6 !important;
+    border-bottom: 1px solid rgba(99,102,241,0.12) !important;
+    background: rgba(8,15,30,0.6) !important;
+  }
+  td.mat-cell {
+    color: #cbd5e1 !important;
+    border-bottom: 1px solid rgba(255,255,255,0.04) !important;
+  }
+  tr.mat-mdc-row:hover { background: rgba(99,102,241,0.08) !important; }
+
+  // ── Form fields ────────────────────────────────────────────────────────────
+  .mat-mdc-text-field-wrapper {
+    background-color: #0f1e3d !important;
+  }
+  .mdc-notched-outline__leading,
+  .mdc-notched-outline__notch,
+  .mdc-notched-outline__trailing {
+    border-color: rgba(99,102,241,0.3) !important;
+  }
+  .mat-mdc-form-field:hover .mdc-notched-outline__leading,
+  .mat-mdc-form-field:hover .mdc-notched-outline__notch,
+  .mat-mdc-form-field:hover .mdc-notched-outline__trailing {
+    border-color: rgba(99,102,241,0.55) !important;
+  }
+  .mat-mdc-input-element, .mat-mdc-select-trigger { color: #e2e8f0 !important; }
+  .mat-mdc-floating-label, .mdc-floating-label   { color: #7c8ba6 !important; }
+  .mat-mdc-select-arrow                          { color: #7c8ba6 !important; }
+
+  // ── Select panel ───────────────────────────────────────────────────────────
+  .mat-mdc-select-panel {
+    background: #0f1e3d !important;
+    border: 1px solid rgba(99,102,241,0.2);
+  }
+  .mat-mdc-option        { color: #cbd5e1 !important; }
+  .mat-mdc-option:hover,
+  .mat-mdc-option.mat-mdc-option-active { background: rgba(99,102,241,0.15) !important; }
+  .mat-mdc-option.mdc-list-item--selected { color: #818cf8 !important; }
+
+  // ── Tabs ───────────────────────────────────────────────────────────────────
+  .mat-mdc-tab-header { border-bottom: 1px solid rgba(99,102,241,0.15) !important; }
+  .mat-mdc-tab .mdc-tab__text-label { color: #7c8ba6; }
+  .mat-mdc-tab.mdc-tab--active .mdc-tab__text-label { color: #818cf8; }
+  .mdc-tab-indicator__content--underline { border-color: #818cf8 !important; }
+
+  // ── Paginator ──────────────────────────────────────────────────────────────
+  .mat-mdc-paginator {
+    background: transparent !important;
+    color: #7c8ba6 !important;
+    border-top: 1px solid rgba(99,102,241,0.1);
+  }
+  .mat-mdc-paginator .mat-mdc-select-value { color: #cbd5e1 !important; }
+  .mat-mdc-icon-button svg { fill: #7c8ba6; }
+
+  // ── Dialog ─────────────────────────────────────────────────────────────────
+  .mdc-dialog__surface {
+    background-color: #0f1e3d !important;
+    border: 1px solid rgba(99,102,241,0.2);
+  }
+
+  // ── Snackbar ───────────────────────────────────────────────────────────────
+  .mdc-snackbar__surface {
+    background: #1e3a6e !important;
+    border: 1px solid rgba(99,102,241,0.25);
+  }
+
+  // ── Progress bar ───────────────────────────────────────────────────────────
+  .mat-mdc-progress-bar {
+    --mdc-linear-progress-track-color: rgba(99,102,241,0.1);
+  }
+
+  // ── Divider ────────────────────────────────────────────────────────────────
+  .mat-divider { border-color: rgba(99,102,241,0.12) !important; }
+
+  // ── Tooltip ────────────────────────────────────────────────────────────────
+  .mat-mdc-tooltip .mdc-tooltip__surface {
+    background: #1e3a6e;
+    color: #e2e8f0;
+  }
+}
+
+/* Proteger mat-icon del reset de Tailwind base */
+mat-icon, .mat-icon {
+  font-family: 'Material Icons' !important;
+  font-feature-settings: 'liga' !important;
+  -webkit-font-feature-settings: 'liga' !important;
+}
+
+// ── Fix Angular Material MDC + Tailwind ─────────────────────────────────────
+
+// Tailwind base resetea border en todos los elementos; esto rompe el "notch"
+// del outline de mat-form-field mostrando una línea extra en el medio.
+.mdc-notched-outline__notch {
+  border-right: none !important;
+}
+
+// Tailwind fuerza box-sizing:border-box en inputs, lo que cambia el padding interno
+// de Material y hace que el texto quede cortado o mal alineado.
+.mat-mdc-input-element,
+.mat-mdc-select-trigger {
+  box-sizing: content-box !important;
+}
+
+// Tailwind resetea border en <select> nativo, aseguramos que los select
+// de Material mantengan su apariencia correcta.
+.mat-mdc-select {
+  .mat-mdc-select-trigger {
+    height: 100%;
+  }
+}
+
+// Asegurar que los form fields tengan la fuente correcta
+.mat-mdc-form-field {
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+// Corregir el color del placeholder / label flotante
+.mdc-floating-label {
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+// Evitar que Tailwind base borre el fondo del outline cuando el campo está activo
+.mdc-notched-outline__leading,
+.mdc-notched-outline__notch,
+.mdc-notched-outline__trailing {
+  border-color: inherit;
+}
+
+.page-container {
+  @apply max-w-7xl mx-auto px-4 py-6;
+}
+
+.card {
+  @apply bg-white rounded-xl shadow-sm p-6;
+}

@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Abrí tu Tienda en 7 Días con IA — NUM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0F0D; --bg2:#101713; --border:#1F2E26; --green:#00E676; --green-soft:rgba(0,230,118,.08);
+    --txt:#EAEAEA; --muted:#B9C2BD; --dim:#7B877F; --red:#FF5C5C; --gold:#E4C97A;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;line-height:1.65;}
+  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto;} *{transition:none!important;animation:none!important;} }
+
+  h1,h2,h3,h4,.kicker,.daytag,.navlink{font-family:'Montserrat',sans-serif;}
+  .kicker{font-size:.72rem;letter-spacing:.28em;text-transform:uppercase;color:var(--green);font-weight:700;margin-bottom:1rem;}
+  h2{font-size:clamp(1.7rem,4.5vw,2.6rem);font-weight:800;line-height:1.1;color:#fff;text-transform:uppercase;letter-spacing:-.01em;margin-bottom:1.1rem;}
+  h2 .g{color:var(--green);}
+  .lead{font-size:1.02rem;color:var(--muted);max-width:62ch;}
+  p{color:#C6CFC9;}
+  strong{color:#fff;}
+
+  .wrap{max-width:880px;margin:0 auto;padding:0 1.25rem;}
+  section{padding:4.5rem 0;position:relative;}
+  section + section{border-top:1px solid #131C16;}
+
+  /* ===== NAV ===== */
+  nav{position:sticky;top:0;z-index:50;background:rgba(11,15,13,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);}
+  .navin{max-width:880px;margin:0 auto;padding:.7rem 1.25rem;display:flex;align-items:center;gap:.6rem;overflow-x:auto;scrollbar-width:none;}
+  .navin::-webkit-scrollbar{display:none;}
+  .navbrand{font-family:'Montserrat',sans-serif;font-weight:900;color:var(--green);font-size:.85rem;letter-spacing:.15em;margin-right:.4rem;}
+  .navlink{flex:none;font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);text-decoration:none;padding:.35rem .65rem;border:1px solid transparent;border-radius:999px;transition:all .15s;}
+  .navlink:hover,.navlink:focus-visible{color:#fff;border-color:var(--border);}
+  .navlink:focus-visible{outline:2px solid var(--green);outline-offset:2px;}
+
+  /* ===== HERO ===== */
+  .hero{padding:5.5rem 0 4.5rem;background:radial-gradient(ellipse 80% 55% at 85% 0%, rgba(0,230,118,.10), transparent 60%);}
+  .hero h1{font-size:clamp(2.2rem,7.5vw,4.2rem);font-weight:900;line-height:1.04;text-transform:uppercase;letter-spacing:-.02em;color:#fff;}
+  .hero h1 .g{color:var(--green);}
+  .hero .sub{margin-top:1.4rem;font-size:1.08rem;color:var(--muted);max-width:60ch;}
+  .badge7{display:inline-flex;align-items:baseline;gap:.8rem;border:1.5px solid var(--green);border-radius:.75rem;padding:.9rem 1.3rem;margin-top:2rem;}
+  .badge7 .n{font-family:'Montserrat',sans-serif;font-size:2.4rem;font-weight:900;color:var(--green);line-height:1;}
+  .badge7 .t{font-family:'Montserrat',sans-serif;font-size:.8rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#fff;line-height:1.5;}
+  .byline{margin-top:2.2rem;padding-top:1.4rem;border-top:1px solid var(--border);font-size:.9rem;color:var(--dim);max-width:60ch;}
+  .byline b{color:#fff;}
+
+  /* ===== DAY TAG ===== */
+  .daytag{display:inline-block;background:var(--green);color:#06110B;font-weight:800;font-size:.75rem;letter-spacing:.18em;text-transform:uppercase;padding:.45rem 1rem;border-radius:.4rem;margin-bottom:1.2rem;}
+
+  /* ===== PROMPT BOX ===== */
+  .promptbox{background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--green);border-radius:.7rem;padding:1.1rem 1.2rem;margin:1.2rem 0;}
+  .pb-head{display:flex;align-items:flex-start;justify-content:space-between;gap:.8rem;margin-bottom:.75rem;flex-wrap:wrap;}
+  .pb-label{font-family:'Montserrat',sans-serif;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--green);font-weight:800;padding-top:.25rem;}
+  .pb-copy{flex:none;font-family:'Montserrat',sans-serif;font-size:.66rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#06110B;background:var(--green);border:none;border-radius:.4rem;padding:.45rem .8rem;cursor:pointer;transition:transform .1s, background .15s;}
+  .pb-copy:hover{background:#33FF98;}
+  .pb-copy:active{transform:scale(.96);}
+  .pb-copy:focus-visible{outline:2px solid #fff;outline-offset:2px;}
+  .pb-copy.done{background:#1F2E26;color:var(--green);}
+  .promptbox pre{font-family:'JetBrains Mono','DejaVu Sans Mono',monospace;font-size:.8rem;line-height:1.6;color:#D7E3DC;white-space:pre-wrap;word-wrap:break-word;}
+  .promptbox pre b{color:#7CFFB8;font-weight:700;}
+  .pb-hint{font-size:.68rem;color:var(--dim);margin-top:.7rem;letter-spacing:.04em;}
+
+  /* ===== CARDS / LISTS / STEPS ===== */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin:1.4rem 0;}
+  .card{background:var(--bg2);border:1px solid var(--border);border-radius:.7rem;padding:1.1rem;}
+  .card h4{font-size:.8rem;font-weight:800;color:var(--green);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.5rem;}
+  .card p, .card li{font-size:.88rem;}
+  .card ul{list-style:none;}
+  .card ul li{padding-left:1.3rem;position:relative;margin-bottom:.35rem;color:#C6CFC9;}
+  .card ul li::before{content:'→';position:absolute;left:0;color:var(--green);}
+
+  ul.check{list-style:none;margin:.8rem 0;}
+  ul.check li{font-size:.94rem;padding-left:1.6rem;position:relative;margin-bottom:.55rem;color:#C6CFC9;}
+  ul.check li::before{content:'✓';position:absolute;left:0;color:var(--green);font-weight:bold;}
+  ul.cross li::before{content:'✕';color:var(--red);}
+
+  .step{display:flex;gap:1rem;margin-bottom:1.2rem;align-items:flex-start;}
+  .stepnum{flex:none;width:2rem;height:2rem;border-radius:50%;border:1.5px solid var(--green);color:var(--green);font-family:'Montserrat',sans-serif;font-weight:800;font-size:.9rem;display:flex;align-items:center;justify-content:center;}
+  .step h4{font-size:1rem;font-weight:700;color:#fff;margin-bottom:.2rem;}
+  .step p{font-size:.92rem;}
+
+  .note{background:var(--green-soft);border:1px solid rgba(0,230,118,.28);border-radius:.7rem;padding:1rem 1.2rem;margin-top:1.4rem;}
+  .note .nl{font-family:'Montserrat',sans-serif;font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--green);font-weight:800;margin-bottom:.4rem;}
+  .note p{font-size:.9rem;color:#CFEADC;}
+  .note.warn{background:rgba(255,92,92,.06);border-color:rgba(255,92,92,.35);}
+  .note.warn .nl{color:var(--red);}
+  .note.warn p{color:#F2D9D9;}
+
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin:1.2rem 0;}
+  @media(max-width:640px){.two{grid-template-columns:1fr;}}
+  .colh{font-family:'Montserrat',sans-serif;font-size:.78rem;color:var(--green);text-transform:uppercase;letter-spacing:.12em;font-weight:800;margin-bottom:.6rem;}
+  .colh.red{color:var(--red);}
+
+  table{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.88rem;}
+  th{font-family:'Montserrat',sans-serif;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--green);text-align:left;padding:.7rem .8rem;border-bottom:1.5px solid var(--border);}
+  td{color:#C6CFC9;padding:.7rem .8rem;border-bottom:1px solid #16211B;vertical-align:top;}
+  td b{color:#fff;}
+  .tscroll{overflow-x:auto;}
+  .tscroll table{min-width:520px;}
+
+  /* ===== DECISION ROWS (Día 1) ===== */
+  .drow{display:flex;align-items:center;gap:1rem;border:1px solid var(--border);border-radius:.7rem;padding:.9rem 1.2rem;margin-bottom:.7rem;flex-wrap:wrap;background:var(--bg2);}
+  .drow .q{flex:1;min-width:220px;font-size:.94rem;color:#E6EEE9;}
+  .drow .arrow{color:var(--green);font-weight:900;}
+  .drow .a{font-family:'Montserrat',sans-serif;font-weight:800;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--green);}
+
+  /* ===== TOC ===== */
+  .toc-item{display:flex;align-items:baseline;gap:1rem;padding:.9rem 0;border-bottom:1px solid #16211B;text-decoration:none;transition:background .15s;flex-wrap:wrap;}
+  .toc-item:hover{background:rgba(255,255,255,.02);}
+  .toc-item .d{font-family:'Montserrat',sans-serif;font-weight:800;color:var(--green);font-size:.82rem;min-width:4.2rem;letter-spacing:.08em;}
+  .toc-item .t{font-family:'Montserrat',sans-serif;font-size:.98rem;color:#E6EEE9;font-weight:600;}
+  .toc-item .s{font-size:.8rem;color:var(--dim);margin-left:auto;}
+  @media(max-width:560px){.toc-item .s{flex-basis:100%;margin-left:5.2rem;}}
+
+  /* ===== PATH SELECTOR (Día 4) ===== */
+  .pathsel{display:flex;gap:.7rem;margin:1.4rem 0;flex-wrap:wrap;}
+  .pathbtn{flex:1;min-width:220px;font-family:'Montserrat',sans-serif;font-weight:800;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;padding:.9rem 1rem;border-radius:.6rem;border:1.5px solid var(--border);background:var(--bg2);color:var(--dim);cursor:pointer;transition:all .15s;text-align:center;}
+  .pathbtn.active{border-color:var(--green);color:#06110B;background:var(--green);}
+  .pathbtn:focus-visible{outline:2px solid var(--green);outline-offset:2px;}
+  .path{display:none;}
+  .path.visible{display:block;}
+  .pathlabel{font-family:'Montserrat',sans-serif;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin:1.6rem 0 .4rem;}
+  .pathlabel b{color:var(--green);}
+
+  /* ===== MATH EXAMPLE ===== */
+  .math{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin:1.2rem 0;align-items:start;}
+  @media(max-width:640px){.math{grid-template-columns:1fr;}}
+  .mrow{display:flex;justify-content:space-between;border-bottom:1px solid #16211B;padding:.6rem 0;font-size:.92rem;}
+  .mrow .v{font-family:'Montserrat',sans-serif;font-weight:800;color:#fff;}
+  .mtotal{margin-top:.9rem;background:var(--green);color:#06110B;font-family:'Montserrat',sans-serif;font-weight:900;text-transform:uppercase;letter-spacing:.08em;font-size:.9rem;text-align:center;border-radius:.5rem;padding:.8rem;}
+  .mscen{border:1px solid var(--border);border-radius:.6rem;padding:.7rem 1rem;display:flex;justify-content:space-between;margin-bottom:.6rem;font-size:.92rem;background:var(--bg2);}
+  .mscen .v{font-family:'Montserrat',sans-serif;font-weight:800;color:var(--green);}
+
+  /* ===== QUOTE / CTA ===== */
+  .quote{border-left:3px solid var(--green);padding:.4rem 0 .4rem 1.2rem;margin:2rem 0 0;font-size:.95rem;color:var(--dim);font-style:italic;}
+  .quote b{color:#fff;font-style:normal;}
+  .cta{background:radial-gradient(ellipse 70% 60% at 50% 100%, rgba(0,230,118,.10), transparent 65%);}
+  .ctabtn{display:inline-block;margin-top:2rem;background:var(--green);color:#06110B;font-family:'Montserrat',sans-serif;font-weight:900;font-size:.95rem;letter-spacing:.1em;text-transform:uppercase;padding:1.1rem 2.2rem;border-radius:.6rem;text-decoration:none;transition:background .15s, transform .1s;}
+  .ctabtn:hover{background:#33FF98;}
+  .ctabtn:active{transform:scale(.98);}
+  footer{padding:2.5rem 0 3.5rem;border-top:1px solid var(--border);}
+  footer p{font-size:.8rem;color:var(--dim);}
+</style>
+</head>
+<body>
+
+<nav aria-label="Navegación del manual">
+  <div class="navin">
+    <span class="navbrand">NUM</span>
+    <a class="navlink" href="#antes">Inicio</a>
+    <a class="navlink" href="#modulo0">Módulo 0</a>
+    <a class="navlink" href="#dia1">Día 1 · Plataforma</a>
+    <a class="navlink" href="#dia2">Día 2 · Producto</a>
+    <a class="navlink" href="#dia3">Día 3 · Proveedor</a>
+    <a class="navlink" href="#dia4">Día 4 · Montaje</a>
+    <a class="navlink" href="#dia5">Día 5 · Tráfico</a>
+    <a class="navlink" href="#dia6">Día 6 · Operación</a>
+    <a class="navlink" href="#dia7">Día 7 · Escala</a>
+    <a class="navlink" href="#errores">Errores</a>
+    <a class="navlink" href="#num">NUM</a>
+  </div>
+</nav>
+
+<!-- ==================== HERO ==================== -->
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker">Manual práctico · Complemento de la clase</div>
+    <h1>Abrí tu<br>tienda en<br><span class="g">7 días</span> con IA</h1>
+    <p class="sub">El plan completo: en los primeros 5 días dejás tu tienda lista para vender — plataforma, producto, proveedor, montaje y tráfico — y en los días 6 y 7 la ponés a operar y a escalar. Todo con la IA (ChatGPT o Claude) haciendo el trabajo pesado, y los prompts listos para copiar y pegar en cada paso.</p>
+    <div class="badge7"><span class="n">7</span><span class="t">días · 1 tienda<br>vendiendo</span></div>
+    <p class="byline">Por <b>Mauro Stendel</b> — 8 años en comercio electrónico, más de 100 tiendas operadas en simultáneo en Amazon, Mercado Libre, Shopify y Tiendanube.</p>
+  </div>
+</header>
+
+<!-- ==================== ANTES DE EMPEZAR ==================== -->
+<section id="antes">
+  <div class="wrap">
+    <div class="kicker">Antes de empezar</div>
+    <h2>Leé esto o no empieces <span class="g">nada.</span></h2>
+    <p class="lead" style="margin-bottom:1rem;">Este manual no te va a hacer millonario en 7 días. El que te promete eso te está mintiendo. Lo que sí vas a tener en 7 días es lo que el 99% de la gente nunca logra: <strong>tu primer negocio funcionando — una tienda real, con un producto real, vendiendo y con un sistema para escalar.</strong></p>
+    <p style="max-width:62ch;">Pueden ser 7 días, 10, 15, o lo que te tome. No importa el número. Lo que importa es que arranques hoy. La IA hace el 80% del trabajo pesado — investigar, escribir, calcular — en minutos. Pero ojo: <strong>la IA no piensa por vos, ejecuta por vos.</strong> Las decisiones las seguís tomando vos, con datos. Este manual te dice qué decidir cada día y qué pedirle a la IA para ejecutarlo.</p>
+    <div class="cards">
+      <div class="card"><h4>Qué necesitás</h4><p>Una cuenta gratuita en ChatGPT o Claude (con la versión gratis alcanza), 2-3 horas por día, y el capital que tengas — podés arrancar sin stock, usando el modelo como laboratorio.</p></div>
+      <div class="card"><h4>Qué vas a lograr</h4><p>Plataforma y modelo definidos, producto validado por datos, proveedor elegido, publicación o tienda montada, tráfico activado, operación armada y sistema para medir y escalar.</p></div>
+      <div class="card"><h4>Qué NO es esto</h4><p>No es magia ni plata fácil. Es un negocio con reglas claras. Si buscás hacerte millonario mañana sin trabajar, cerrá esta página ahora. En serio.</p></div>
+    </div>
+    <div class="note"><div class="nl">La regla de oro del manual</div><p>Cada día tiene prompts listos para copiar y pegar en ChatGPT o Claude. Tocás el botón "Copiar", abrís un chat nuevo, pegás, y todo lo que está entre <strong>[CORCHETES]</strong> lo reemplazás con tu información antes de enviar. La IA genérica da respuestas genéricas. La IA con contexto da respuestas que venden.</p></div>
+
+    <div style="margin-top:3rem;">
+      <div class="kicker">Tu plan · 7 días, paso a paso</div>
+      <a class="toc-item" href="#dia1"><span class="d">DÍA 1</span><span class="t">Plataforma y modelo</span><span class="s">Dónde vender según TU situación · con o sin stock</span></a>
+      <a class="toc-item" href="#dia2"><span class="d">DÍA 2</span><span class="t">Investigación de producto</span><span class="s">Datos, no corazón · salís con 3-5 candidatos</span></a>
+      <a class="toc-item" href="#dia3"><span class="d">DÍA 3</span><span class="t">Proveedor</span><span class="s">Contactás, negociás, elegís</span></a>
+      <a class="toc-item" href="#dia4"><span class="d">DÍA 4</span><span class="t">Montaje</span><span class="s">Tu publicación o tu tienda, completa</span></a>
+      <a class="toc-item" href="#dia5"><span class="d">DÍA 5</span><span class="t">Tráfico</span><span class="s">SEO interno o Meta Ads · lista para vender</span></a>
+      <a class="toc-item" href="#dia6"><span class="d">DÍA 6</span><span class="t">Operación</span><span class="s">Tu primera venta sin que nada se rompa</span></a>
+      <a class="toc-item" href="#dia7"><span class="d">DÍA 7</span><span class="t">Medí, ajustá y escalá</span><span class="s">Matar o escalar: decisiones con datos</span></a>
+      <div class="note"><div class="nl">Cómo funciona el manual</div><p>El Día 1 elegís <strong>UNA plataforma</strong>: marketplace (Mercado Libre o Amazon) o tienda propia (Tiendanube o Shopify). A partir de ahí, todo se adapta a tu elección: en los Días 4 y 5 seguís el camino de TU plataforma, no los dos. Los primeros 5 días dejan la tienda lista; los días 6 y 7 la ponen a vender y a escalar — los tres engranajes: <strong>producto que vende, tráfico constante y operación que no se rompe.</strong></p></div>
+    </div>
+    <p class="quote">"El error más caro no es perder plata en un producto malo: es perder MESES haciendo las cosas mal porque nadie te explica cómo." — <b>Mauro</b></p>
+  </div>
+</section>
+
+<!-- ==================== MODULO 0 ==================== -->
+<section id="modulo0">
+  <div class="wrap">
+    <div class="kicker">Módulo cero</div>
+    <h2>Cómo hablarle a la IA para que <span class="g">labure bien.</span></h2>
+    <p class="lead" style="margin-bottom:1.4rem;">Todos los prompts de este manual funcionan igual en ChatGPT y en Claude: abrís un chat, pegás, completás los corchetes y enviás. La diferencia entre una respuesta inútil y una que te hace ganar plata no está en la herramienta. Está en el prompt. Un buen prompt tiene 4 partes:</p>
+    <div class="step"><div class="stepnum">1</div><div><h4>Rol</h4><p>Decile quién tiene que ser. "Actuá como un vendedor de ecommerce con 8 años operando en Mercado Libre" da mejores respuestas que empezar en frío.</p></div></div>
+    <div class="step"><div class="stepnum">2</div><div><h4>Contexto</h4><p>Contale tu situación real: tu país, tu capital, tu tiempo disponible. La IA no adivina — si no le das contexto, te da respuestas de manual gringo que no aplican a tu mercado.</p></div></div>
+    <div class="step"><div class="stepnum">3</div><div><h4>Tarea concreta</h4><p>Pedile UNA cosa específica y medible. "Ayudame con mi tienda" es basura. "Escribime 5 títulos de menos de 60 caracteres para esta publicación" es un pedido de verdad.</p></div></div>
+    <div class="step"><div class="stepnum">4</div><div><h4>Formato de salida</h4><p>Decile cómo querés la respuesta: tabla, lista, texto de X palabras, tono natural de tu país. Ahorra idas y vueltas.</p></div></div>
+    <div class="promptbox">
+      <div class="pb-head"><span class="pb-label">Prompt maestro — pegalo al inicio de cada chat</span><button class="pb-copy" type="button">Copiar</button></div>
+      <pre>Actuá como mi consultor experto en comercio electrónico para Latinoamérica, con experiencia real vendiendo en Mercado Libre, Amazon, Tiendanube y Shopify.
+
+Mi situación: vivo en <b>[PAÍS]</b>, tengo <b>[MONTO]</b> de capital para arrancar, puedo dedicarle <b>[X]</b> horas por día y mi nivel de experiencia es <b>[cero / básico / intermedio]</b>.
+
+Reglas para trabajar conmigo:
+1. Sé directo y práctico. Nada de teoría genérica.
+2. Elegí siempre con datos y lógica de negocio, nunca con entusiasmo.
+3. Si te falta información para responder bien, preguntame antes de inventar.
+4. Cuando escribas textos de venta, usá español natural de mi país, sin sonar a traducción.
+
+Confirmá que entendiste y esperá mi primera tarea.</pre>
+      <p class="pb-hint">Pegalo en ChatGPT o Claude y reemplazá los [CORCHETES] con tu información.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== DIA 1 — PLATAFORMA Y MODELO ==================== -->
+<section id="dia1">
+  <div class="wrap">
+    <div class="daytag">Día 1 · Plataforma y modelo</div>
+    <h2>Dónde vender según tu país y tu <span class="g">situación.</span></h2>
+    <p class="lead" style="margin-bottom:1.4rem;">Antes de elegir dónde vender, tenés que decidir cómo. Hay dos modelos, y cada uno arranca distinto. Después elegís la plataforma — y acá es donde la gente que va sola pierde meses: eligen por moda, no por su situación.</p>
+
+    <h3 class="colh" style="font-size:.85rem;">Primera decisión: ¿sin stock o con stock?</h3>
+    <div class="two">
+      <div class="card">
+        <h4>Sin stock</h4>
+        <ul>
+          <li>Publicás el producto (todavía no lo tenés)</li>
+          <li>Alguien compra</li>
+          <li>Recién ahí le comprás al proveedor</li>
+          <li>Le das la dirección del cliente</li>
+          <li>Nunca tocás el producto</li>
+        </ul>
+        <p style="margin-top:.6rem;color:var(--dim);font-style:italic;">Arrancás con casi cero pesos · menos margen</p>
+      </div>
+      <div class="card" style="border-color:var(--green);">
+        <h4>Con stock</h4>
+        <ul>
+          <li>Comprás el producto antes</li>
+          <li>Lo tenés en tu casa o depósito</li>
+          <li>Lo publicás</li>
+          <li>Cuando venden, lo mandás vos</li>
+          <li>Más control sobre tiempos</li>
+        </ul>
+        <p style="margin-top:.6rem;color:var(--dim);font-style:italic;">Más margen y control · necesitás más capital</p>
+      </div>
+    </div>
+    <div class="note"><div class="nl">Estrategia</div><p>Usá <strong>SIN stock como laboratorio</strong> para validar. Cuando algo funciona, comprás stock y escalás.</p></div>
+
+    <h3 class="colh" style="font-size:.85rem;margin-top:2.5rem;">Segunda decisión: ¿marketplace o tienda propia?</h3>
+    <div class="tscroll">
+    <table>
+      <tr><th style="width:20%;"></th><th>Marketplace (ML / Amazon)</th><th>Tienda propia (Tiendanube / Shopify)</th></tr>
+      <tr><td><b>Tráfico</b></td><td>Ya existe. Pagás comisión, pero no necesitás publicidad para que te vean.</td><td>Lo generás vos, con publicidad.</td></tr>
+      <tr><td><b>Cliente</b></td><td>Los datos son de la plataforma.</td><td>Los datos son tuyos: construís marca.</td></tr>
+      <tr><td><b>Ideal para</b></td><td>Caja rápida, arrancar con poco.</td><td>Marca y margen a largo plazo.</td></tr>
+    </table>
+    </div>
+
+    <h3 class="colh" style="font-size:.85rem;margin-top:1.5rem;">No es cuál es mejor. Es cuál es mejor PARA VOS:</h3>
+    <div class="drow"><span class="q">¿Argentina (o tu país) con poco capital?</span><span class="arrow">→</span><span class="a">Mercado Libre o Tiendanube</span></div>
+    <div class="drow"><span class="q">¿Querés vender en varios países de Latam o USA?</span><span class="arrow">→</span><span class="a">Shopify</span></div>
+    <div class="drow"><span class="q">¿USA con capital?</span><span class="arrow">→</span><span class="a">Amazon</span></div>
+
+    <div class="promptbox">
+      <div class="pb-head"><span class="pb-label">Prompt 1 — Tu plataforma y tu modelo, decididos con datos</span><button class="pb-copy" type="button">Copiar</button></div>
+      <pre>Ayudame a tomar la primera decisión de mi negocio de ecommerce. Mi situación: vivo en <b>[PAÍS]</b>, tengo <b>[MONTO]</b> de capital, <b>[X]</b> horas por día, y mi objetivo es <b>[caja rápida / construir marca a largo plazo / cobrar en dólares]</b>.
+
+Usá estas reglas de decisión:
+- Poco capital y quiero arrancar rápido en mi país → Mercado Libre o Tiendanube.
+- Quiero vender en varios países de Latam o USA → Shopify.
+- Estoy en USA o tengo capital para cobrar en dólares → Amazon.
+- Sin stock funciona como laboratorio para validar; con stock da más margen y control pero requiere capital.
+
+Respondeme: (1) qué plataforma me conviene y por qué, en base a MI situación (no a cuál es "mejor" en general), (2) si me conviene arrancar sin stock o con stock, (3) los pasos exactos para crear la cuenta HOY en esa plataforma, y (4) qué requisitos o documentación voy a necesitar en mi país. Sé directo: una sola recomendación, no un "depende".</pre>
+    </div>
+    <div class="note"><div class="nl">Tarea del día 1</div><p>Decidís plataforma y modelo, y <strong>creás la cuenta hoy</strong>. Nada más. No busques productos todavía — eso es mañana, con método.</p></div>
+  </div>
+</section>
+
+<!-- ==================== DIA 2 — INVESTIGACIÓN DE PRODUCTO ==================== -->
+<section id="dia2">
+  <div class="wrap">
+    <div class="daytag">Día 2 · Investigación de producto</div>
+    <h2>El nicho se elige con datos, no con el <span class="g">corazón.</span></h2>
+    <p class="lead" style="margin-bottom:1.4rem;">"Me encantan los gatos, quiero vender accesorios para gatos" — ¿cuántos se venden por día? ¿cuántos competidores? ¿qué margen? No sabe. Solo le gustan los gatos. El que gana plata dice: "se venden 200 por día, pocos vendedores con buena reputación, margen 40%, lo consigo a $3". Hoy salís con 3-5 candidatos validados por datos.</p>
+
+    <div class="two">
+      <div>
+        <div class="colh">Buscar</div>
+        <ul class="check">
+          <li><strong>Liviano y chico</strong> — el envío no te mata.</li>
+          <li><strong>Sin talles</strong> — no hay devoluciones por talle.</li>
+          <li><strong>No frágil</strong> — nada de vidrio ni cerámica.</li>
+          <li><strong>Demanda constante</strong> — no estacional.</li>
+          <li><strong>Margen mínimo de $5 a $8 por unidad.</strong></li>
+          <li><strong>Que se compre por impulso.</strong></li>
+        </ul>
+      </div>
+      <div>
+        <div class="colh red">Evitar</div>
+        <ul class="check cross">
+          <li>Pesado o voluminoso.</li>
+          <li>Con talles (ropa, calzado).</li>
+          <li>Frágil (vidrio, cerámica).</li>
+          <li>Estacional.</li>
+          <li>Margen menor a $3.</li>
+          <li>Productos regulados.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="promptbox">
+      <div class="pb-head"><span class="pb-label">Prompt 2 — Generá tu lista de candidatos</span><button class="pb-copy" type="button">Copiar</button></div>
+      <pre>Voy a vender en <b>[PLATAFORMA ELEGIDA EL DÍA 1]</b> en <b>[PAÍS]</b>. Dame 20 ideas de productos que cumplan TODOS estos criterios: livianos y chicos, sin talles, no frágiles, con demanda constante todo el año (no estacionales), que se compren por impulso, con potencial de margen de $5 a $8 (USD) o más por unidad, y que NO sean productos regulados.
+
+Para cada producto indicá en una tabla: (1) por qué cumple los criterios, (2) rango de precio de compra y de venta estimado en mi mercado, (3) a qué tipo de comprador apunta. Después marcá tus 5 favoritos con lógica de negocio, no con entusiasmo.</pre>
+    </div>
+
+    <div class="promptbox">
+      <div class="pb-head"><span class="pb-label">Prompt 3 — Espiá a la competencia con datos reales</span><button class="pb-copy" type="button">Copiar</button></div>
+      <pre>Estoy evaluando vender <b>[PRODUCTO]</b> en <b>[PLATAFORMA]</b> en <b>[PAÍS]</b>. Busqué el producto y acá están los datos reales de los 5 primeros resultados:
+
+<b>[PEGÁ: título, precio, cantidad de ventas/reseñas y reputación de cada vendedor]</b>
+
+Analizá y respondeme:
+1. ¿Cuántos se venden por día aproximadamente? ¿Hay demanda real?
+2. ¿Cuántos competidores fuertes hay? ¿Hay espacio para uno nuevo?
+3. ¿En qué rango de precio me conviene entrar?
+4. ¿Qué debilidades ves para aprovechar (fotos malas, títulos flojos, quejas repetidas en reseñas)?
+5. Veredicto: ¿entro o busco otro? Sé brutal, no me endulces la respuesta.</pre>
+    </div>
+
+    <h3 class="colh" style="font-size:.85rem;margin-top:2rem;">La matemática — con un ejemplo real</h3>
+    <div class="math">
+      <div>
+        <div class="mrow"><span>Precio de compra</span><span class="v">$4</span></div>
+        <div class="mrow"><span>Flete / importación</span><span class="v">$2</span></div>
+        <div class="mrow"><span>Comisión de plataforma</span><span class="v">$1</span></div>
+        <div class="mrow"><span>Precio de venta</span><span class="v">$18</span></div>
+        <div class="mtotal">Ganancia neta: $8 / unidad</div>
+      </div>
+      <div>
+        <div class="mscen"><span>3 ventas/día</span><span class="v">$720/mes</span></div>
+        <div class="mscen"><span>5 ventas/día</span><span class="v">$1.200/mes</span></div>
+        <div class="mscen"><span>10 ventas/día</span><span class="v">$2.400/mes</span></div>
+        <p style="font-size:.85rem;margin-top:.5rem;">Y esto con UN solo producto. Multiplicá por varios y entendés cómo se construye el número.</p>
+      </div>
+    </div>
+
+    <div class="promptbox">
+      <div class="pb-head"><span class="pb-label">Prompt 4 — Calculadora de rentabilidad</span><button class="pb-copy" type="button">Copiar</button></div>
+      <pre>Hacé la matemática de mi producto <b>[PRODUCTO]</b> como calculadora de rentabilidad:
+
+- Precio de compra: <b>[X]</b>
+- Flete / importación / envío: <b>[X o "estimalo para mi país"]</b>
+- Comisión de la plataforma <b>[PLATAFORMA]</b>: <b>[X% o "usá la comisión real de esa plataforma"]</b>
+- Empaque y otros costos: <b>[X o "estimalos"]</b>
+
+Calculá: (1) ganancia neta por unidad, (2) si cumple el margen mínimo de $5-8 por unidad — si no lo cumple, decímelo sin vueltas, (3) cuánto gano por mes con 3, 5 y 10 ventas por día, y (4) a qué precio de venta tendría que salir para que el margen tenga sentido. Mostrame todas las cuentas.</pre>
+    </div>
+    <div class="note"><div class="nl">Tarea del día 2</div><p>Aplicás la grilla y la calculadora a tus candidatos. Salís del día con <strong>3-5 productos validados por datos</strong> — no por gusto. Si la competencia vende miles, hay demanda: bien. Si nadie vende nada, no descubriste una mina de oro — descubriste que a nadie le importa.</p></div>
+  </div>
+</section>
+
+<!-- ==================== DIA 3 — PROVEEDOR ==================== -->
+<section id="dia3">
+  <div class="wrap">
+    <div class="daytag">Día 3 · Proveedor</div>
+    <h2>Un mal proveedor arruina un buen <span class="g">producto.</span></h2>
+    <p class="lead" style="margin-bottom:1.4rem;">Hoy contactás proveedores, pedís precios y muestras, y negociás. Elegís el que cumple tiempos, calidad y precio. Hay tres tipos:</p>
+    <div class="cards">
+      <div class="card"><h4>Internacional</h4><p>Tipo Alibaba. Precio más bajo, pero importás. Tiene sentido con volumen.</p></div>
+      <div class="card"><h4>Local</h4><p>Distribuidores y fábricas. Precio un poco más alto, logística simple. <strong>Ideal para arrancar.</strong></p></div>
+      <div class="card"><h4>Dropshipping</h4><p>El proveedor despacha por vos. Ideal para validar sin comprar stock.</p></div>
+    </div>
+
+    <h3 class="colh" style="font-size:.85rem;margin-top:1.5rem;">Negociar precio es leverage, no magia</h3>
+    <div class="step"><div class="stepnum">1</div><div><h4>Volumen futuro, no actual</h4><p>"Si funciona te compro 500 por mes" abre precios que "dame 10" nunca abre.</p></div></div>
+    <div class="step"><div class="stepnum">2</div><div><h4>Pedí muestras y comparalas</h4><p>El proveedor que sabe que comparás te mejora el precio.</p></div></div>
+    <div class="step"><div class="stepnum">3</div><div><h4>Negociá condiciones, no solo precio</h4><p>Tiempos de pago, quién paga el envío, qué pasa con las fallas.</p></div></div>
+
+    <div class="promptbox">
+      <div class="pb-head"><span class="pb-label">Prompt 5 — Encontrá y filtrá proveedores</span><button class="pb-copy" type="button">Copiar</button></div>
+      <pre>Necesito conseguir proveedores de <b>[PRODUCTO]</b> para vender en <b>[PAÍS]</b> con el modelo <b>[sin stock / con stock]</b>. Decime:
+
+1. Dónde buscar proveedores de este producto en mi caso: opciones locales (distribuidores, fábricas, mayoristas — cómo encontrarlos), internacionales (Alibaba y similares) y de dropshipping. Recomendá UNA vía principal según mi modelo y capital.
+2. La lista de 10 preguntas que tengo que hacerle a cada proveedor ANTES de poner un peso (tiempos de despacho, mínimos de compra, muestras, qué pasa con productos defectuosos, formas de pago seguras).
+3. Las 5 señales de alerta de que un proveedor es problema.
+
+Importante: si vendo sin stock en un marketplace, el proveedor tiene que poder despachar en menos de 48 horas. Tenelo en cuenta en todo.</pre>
+    </div>
+
+    <div class="promptbox">
+      <div class="pb-head"><span class="pb-label">Prompt 6 — El mensaje para contactar y negociar</span><button class="pb-copy" type="button">Copiar</button></div>
+      <pre>Escribime 2 mensajes para proveedores de <b>[PRODUCTO]</b>:
+
+1. PRIMER CONTACTO: profesional, pidiendo cotización, mínimos de compra, tiempos de despacho y muestras. Que me haga parecer un comprador serio aunque recién arranco.
+2. NEGOCIACIÓN: para después de recibir la cotización. Usá estas 3 palancas: (a) volumen futuro — "si el producto funciona, proyecto comprar [X] unidades por mes", (b) mencionar que estoy comparando muestras de varios proveedores, (c) negociar condiciones además del precio: tiempos de pago, quién paga el envío y qué pasa con las unidades falladas.
+
+Tono: directo y cordial, español natural de <b>[PAÍS]</b>. Nada de sonar desesperado ni rogar descuentos.</pre>
+    </div>
+    <div class="note"><div class="nl">Tarea del día 3</div><p>Contactás al menos <strong>3 proveedores</strong> por tu producto principal, comparás precios y condiciones, y elegís uno. Si vendés sin stock: confirmá por escrito que despacha en menos de 48 hs. Sin eso, no hay trato.</p></div>
+  </div>
+</section>
+
+<!-- ==================== DIA 4 — MONTAJE ==================== -->
+<section id="dia4">
+  <div class="wrap">
+    <div class="daytag">Día 4 · Montaje</div>
+    <h2>Armá tu publicación<br>o tu <span class="g">tienda.</span></h2>
+    <p class="lead" style="margin-bottom:.6rem;">Hoy montás todo: título, fotos, descripción, precio y medios de pago. El camino depende de lo que elegiste el Día 1 — <strong>seguí solo el tuyo.</strong></p>
+
+    <div class="pathsel" role="tablist" aria-label="Elegí tu camino">
+      <button class="pathbtn active" id="btn-mp" type="button" role="tab" aria-selected="true">Elegí Marketplace (ML / Amazon)</button>
+      <button class="pathbtn" id="btn-tp" type="button" role="tab" aria-selected="false">Elegí Tienda propia (Tiendanube / Shopify)</button>
+    </div>
+
+    <!-- ============ CAMINO MARKETPLACE ============ -->
+    <div class="path visible" id="path-mp">
+      <div class="pathlabel">Tu camino: <b>Marketplace</b> — tu publicación ES tu vidriera. El algoritmo posiciona lo que convierte.</div>
+      <ul class="check">
+        <li><strong>Título</strong> — las palabras exactas que busca el comprador.</li>
+        <li><strong>Fotos</strong> — fondo blanco, claras.</li>
+        <li><strong>Precio</strong> — competitivo.</li>
+        <li><strong>Reputación</strong> — verde gana. Respondé rápido, despachá a tiempo.</li>
+        <li><strong>Envíos</strong> — gratis y rápido gana visibilidad.</li>
+      </ul>
+
+      <div class="promptbox">
+        <div class="pb-head"><span class="pb-label">Prompt 7A — Título optimizado para el buscador</span><button class="pb-copy" type="button">Copiar</button></div>
+        <pre>Voy a publicar <b>[PRODUCTO]</b> en <b>[Mercado Libre / Amazon]</b> en <b>[PAÍS]</b>. Los títulos de mis 5 competidores más vendidos son:
+
+<b>[PEGÁ LOS TÍTULOS]</b>
+
+1. Identificá las palabras clave que se repiten (eso es lo que la gente busca — el SEO interno del marketplace es gratis: se paga con trabajo, no con plata).
+2. Escribime 5 opciones de título con la estructura [Producto + marca/modelo + característica principal + beneficio/uso], usando esas palabras clave. Máximo <b>[60 caracteres para ML / 200 para Amazon]</b>. Sin emojis, sin "OFERTA", sin signos de exclamación: eso penaliza.
+3. Marcá cuál publicarías vos y por qué.</pre>
+      </div>
+
+      <div class="promptbox">
+        <div class="pb-head"><span class="pb-label">Prompt 7B — Descripción que mata objeciones</span><button class="pb-copy" type="button">Copiar</button></div>
+        <pre>Escribí la descripción de mi publicación de <b>[PRODUCTO]</b> en <b>[Mercado Libre / Amazon]</b>.
+
+Si es Mercado Libre: texto plano, con esta estructura → (1) qué es y para qué sirve en 2-3 líneas directas, (2) "LO QUE RECIBÍS:" contenido exacto del paquete, (3) "CARACTERÍSTICAS:" specs en líneas cortas, (4) "PREGUNTAS FRECUENTES:" las 5 objeciones típicas de la categoría respondidas (garantía, envíos, original, tiempos), (5) cierre invitando a preguntar.
+
+Si es Amazon: 5 bullet points que arranquen con 2-4 palabras en MAYÚSCULAS resumiendo el beneficio, máx. 200 caracteres cada uno, usando las palabras clave del título.
+
+Usá las debilidades de la competencia que encontramos el Día 2 para prometer explícitamente lo que ellos hacen mal: <b>[PEGÁ LOS HALLAZGOS]</b>. Nada de promesas médicas ni superlativos vacíos.</pre>
+      </div>
+
+    </div>
+
+    <!-- ============ CAMINO TIENDA PROPIA ============ -->
+    <div class="path" id="path-tp">
+      <div class="pathlabel">Tu camino: <b>Tienda propia</b> — los datos del cliente son tuyos y construís marca. Tu tienda tiene que generar confianza y eliminar fricción.</div>
+      <div class="two">
+        <div>
+          <div class="step"><div class="stepnum">1</div><div><h4>Hero</h4><p>Beneficio principal + foto del producto + botón de compra visible sin scrollear.</p></div></div>
+          <div class="step"><div class="stepnum">2</div><div><h4>Beneficios, no características</h4><p>Qué gana el cliente, no qué tiene el producto.</p></div></div>
+          <div class="step"><div class="stepnum">3</div><div><h4>Prueba social</h4><p>Reseñas, fotos de clientes, vendidos. Sin esto, sos una tienda trucha más.</p></div></div>
+        </div>
+        <div>
+          <div class="step"><div class="stepnum">4</div><div><h4>Garantía y políticas claras</h4><p>Devolución, cambios, tiempos de envío. La claridad vende más que el diseño.</p></div></div>
+          <div class="step"><div class="stepnum">5</div><div><h4>Preguntas frecuentes</h4><p>Respondé las objeciones antes de que existan.</p></div></div>
+          <div class="step"><div class="stepnum">6</div><div><h4>Cierre con urgencia honesta</h4><p>Stock real, promo real. La urgencia trucha se nota y espanta.</p></div></div>
+        </div>
+      </div>
+
+      <div class="promptbox">
+        <div class="pb-head"><span class="pb-label">Prompt 7A — El copy completo de tu tienda</span><button class="pb-copy" type="button">Copiar</button></div>
+        <pre>Actuá como copywriter de respuesta directa especializado en ecommerce para Latinoamérica. Escribí el copy completo de la página de mi producto en <b>[Tiendanube / Shopify]</b>.
+
+Producto: <b>[PRODUCTO + descripción breve]</b>
+Cliente ideal: <b>[QUIÉN LO COMPRA y qué problema le resuelve]</b>
+Precio: <b>[PRECIO]</b> · Diferencial vs competencia: <b>[TU VENTAJA]</b>
+Debilidades de la competencia (del Día 2): <b>[PEGÁ LOS HALLAZGOS]</b>
+
+Estructura: (1) titular + subtítulo del hero, (2) 5 beneficios en formato "beneficio: explicación de una línea", (3) descripción del producto con specs, (4) 3 reseñas de ejemplo realistas que después reemplazo por reales, (5) texto de garantía y envíos, (6) 6 preguntas frecuentes respondidas, (7) cierre con llamado a la acción.
+
+Tono: cercano y directo, español natural de <b>[PAÍS]</b>. Prohibido sonar a traducción o a teletienda.</pre>
+      </div>
+
+      <div class="promptbox">
+        <div class="pb-head"><span class="pb-label">Prompt 7B — Políticas y confianza</span><button class="pb-copy" type="button">Copiar</button></div>
+        <pre>Redactá las políticas de mi tienda en <b>[PAÍS]</b>: (1) envíos — trabajo con <b>[CORREO/MÉTODO]</b> y los tiempos son <b>[X días]</b>, (2) cambios y devoluciones — acepto devoluciones dentro de <b>[X días]</b>, (3) preguntas frecuentes de pago y seguridad.
+
+Tono claro y humano, que genere confianza, sin lenguaje legal intimidante — pero cubriéndome de los casos conflictivos típicos (producto usado, plazos vencidos, costos de reenvío). Cada política en menos de 150 palabras.</pre>
+      </div>
+
+      <div class="promptbox">
+        <div class="pb-head"><span class="pb-label">Prompt 7C — Nombre y bio de la tienda</span><button class="pb-copy" type="button">Copiar</button></div>
+        <pre>Necesito un nombre para mi tienda de <b>[NICHO/PRODUCTO]</b> en <b>[PAÍS]</b>. Dame 15 opciones: cortas, fáciles de pronunciar y escribir, probablemente disponibles como @usuario de Instagram, y que no me encasillen si mañana agrego más productos. Marcá tus 3 favoritas y por qué. Para la favorita, escribí la bio de Instagram (máx. 150 caracteres) y el "Sobre nosotros" de la tienda (100 palabras).</pre>
+      </div>
+    </div>
+
+    <!-- ============ COMÚN A AMBOS ============ -->
+    <div class="pathlabel" style="margin-top:2rem;">Para los dos caminos:</div>
+    <div class="promptbox">
+      <div class="pb-head"><span class="pb-label">Prompt 8 — Briefing de fotos (con el celular alcanza)</span><button class="pb-copy" type="button">Copiar</button></div>
+      <pre>Armame el plan de fotos para vender <b>[PRODUCTO]</b> en <b>[PLATAFORMA]</b>, para sacar yo mismo con un celular. Definí las 7 fotos exactas: (1) principal con fondo blanco, (2) producto en uso, (3) detalle de calidad/material, (4) escala (comparado con algo cotidiano), (5) contenido del paquete, (6) foto que responda la objeción principal de la categoría, (7) foto estilo "reseña de cliente". Para cada una: ángulo, luz, fondo y qué error evitar.</pre>
+    </div>
+    <div class="note"><div class="nl">Tarea del día 4</div><p>Publicación o tienda montada por completo: título, fotos, descripción, precio (con el margen validado el Día 2) y medios de pago activos. <strong>Hacete una compra de prueba</strong> antes de dar el día por cerrado.</p></div>
+  </div>
+</section>
+
+<!-- ==================== DIA 5 — TRÁFICO ==================== -->
+<section id="dia5">
+  <div class="wrap">
+    <div class="daytag">Día 5 · Tráfico</div>
+    <h2>Si el producto es perfecto pero nadie lo ve, no vendés <span class="g">nada.</span></h2>
+    <p class="lead" style="margin-bottom:1.4rem;">El tráfico es el oxígeno del comercio electrónico. Y hay dos mundos completamente distintos — el tuyo depende de tu plataforma:</p>
+
+    <div class="two">
+      <div class="card">
+        <h4>Marketplace → SEO interno</h4>
+        <p>El tráfico ya existe adentro de la plataforma. Que te encuentren depende de: título con las palabras exactas que busca el comprador, fotos claras, precio competitivo, reputación verde y envíos rápidos. <strong>El SEO en marketplace es gratis: pagás con trabajo, no con plata.</strong></p>
+      </div>
+      <div class="card">
+        <h4>Tienda propia → Meta Ads</h4>
+        <p>El tráfico no viene solo: lo traés vos con publicidad en Facebook e Instagram. En Latam podés testear con <strong>$5 a $10 por día</strong>. Empezá chico, medí, y escalá solo lo que funciona.</p>
+      </div>
+    </div>
+    <div class="note warn"><div class="nl">Error fatal: no mezcles canales</div><p>No pagues publicidad en Facebook para mandar gente a tu publicación de Mercado Libre — <strong>pagás dos veces</strong>: la publicidad y la comisión. Marketplace se alimenta de SEO interno; tienda propia se alimenta de ads.</p></div>
+
+    <div class="promptbox">
+      <div class="pb-head"><span class="pb-label">Prompt 9 — SEO interno: auditá tu publicación (marketplace)</span><button class="pb-copy" type="button">Copiar</button></div>
+      <pre>Auditá mi publicación de <b>[PLATAFORMA]</b> como si fueras el algoritmo. Acá está todo:
+
+Título: <b>[PEGÁ TU TÍTULO]</b>
+Descripción: <b>[PEGÁ TU DESCRIPCIÓN]</b>
+Precio: <b>[TU PRECIO]</b> · Precio de los 3 competidores top: <b>[PRECIOS]</b>
+Envío: <b>[gratis / pago, tiempos]</b>
+
+Evaluá del 1 al 10 cada factor de visibilidad: título (palabras clave), claridad de la descripción, competitividad del precio y propuesta de envío. Para cada punto flojo, dame el cambio EXACTO que harías (no consejos genéricos: el texto corregido). Terminá con las 3 acciones de mayor impacto para hoy.</pre>
+    </div>
+
+    <div class="promptbox">
+      <div class="pb-head"><span class="pb-label">Prompt 10 — Tu primera campaña de Meta Ads (tienda propia)</span><button class="pb-copy" type="button">Copiar</button></div>
+      <pre>Voy a lanzar mi primera campaña de Meta Ads (Facebook + Instagram) para <b>[PRODUCTO]</b>, vendiendo en mi tienda de <b>[Tiendanube / Shopify]</b> en <b>[PAÍS]</b>, con un presupuesto de test de <b>[$5-10]</b> por día.
+
+1. Escribí 3 anuncios, cada uno con: gancho de los primeros 3 segundos (que frene el scroll: dolor, deseo o curiosidad), cuerpo de 2-4 líneas con el beneficio principal, y llamado a la acción directo. Variá los ángulos: dolor/problema, deseo/resultado y prueba social.
+2. Para cada anuncio, la idea de video de 15 segundos que lo acompaña, plano por plano, filmable con celular.
+3. Explicame la configuración de campaña recomendada para un test con este presupuesto (objetivo, público, duración del test) y qué métrica mirar para decidir si escalo o corto.</pre>
+    </div>
+
+    <div class="promptbox">
+      <div class="pb-head"><span class="pb-label">Prompt 11 — Contenido orgánico (suma en los dos caminos)</span><button class="pb-copy" type="button">Copiar</button></div>
+      <pre>Dame 7 ideas de videos cortos (15-30 seg) para mostrar <b>[PRODUCTO]</b> en TikTok/Reels sin mostrar mi cara si no quiero. Para cada una: gancho hablado o en texto, qué se ve en pantalla, y cierre con llamado a la acción hacia <b>[mi publicación / mi tienda]</b>. Priorizá formatos probados: unboxing, antes/después, "3 usos que no conocías", respuesta a una objeción, comparación con la alternativa cara.</pre>
+    </div>
+
+    <div class="note"><div class="nl">Tarea del día 5</div><p>Con la tienda montada, activás tu fuente de tráfico: auditás el SEO interno de tu publicación o lanzás tu primera campaña de test. <strong>Al final del día 5, tu tienda está lista para vender.</strong> Los próximos dos días la ponés a operar y a escalar.</p></div>
+  </div>
+</section>
+
+<!-- ==================== DIA 6 — OPERACIÓN ==================== -->
+<section id="dia6">
+  <div class="wrap">
+    <div class="daytag">Día 6 · Operación</div>
+    <h2>Tu primera venta, sin que nada se <span class="g">rompa.</span></h2>
+    <p class="lead" style="margin-bottom:1.4rem;">De los tres engranajes para pasar de $10K a $100K — producto, tráfico y operación — el tercero es el que nadie prepara. Y es el que te destruye la reputación cuando entra la primera venta y no sabés qué hacer. Hoy armás el sistema ANTES de necesitarlo.</p>
+
+    <div class="step"><div class="stepnum">1</div><div><h4>Entra la venta</h4><p>Confirmás el pago en la plataforma. Si vendés sin stock, disparás la orden al proveedor EN EL MOMENTO — recordá: tiene que despachar en menos de 48 hs.</p></div></div>
+    <div class="step"><div class="stepnum">2</div><div><h4>Despachás y cargás el tracking</h4><p>Empaque prolijo, etiqueta correcta, número de seguimiento cargado el mismo día. En marketplace, los tiempos de despacho son una métrica crítica: si tardás, el algoritmo te entierra.</p></div></div>
+    <div class="step"><div class="stepnum">3</div><div><h4>Respondés todo en menos de 1 hora</h4><p>Preguntas pre-venta y post-venta. Velocidad y claridad. La reputación verde gana visibilidad — y la visibilidad son ventas.</p></div></div>
+    <div class="step"><div class="stepnum">4</div><div><h4>Postventa que genera reseñas</h4><p>Un mensaje de seguimiento cuando llega el producto. Cliente contento = reseña positiva = más reputación = más ventas. El círculo se alimenta solo.</p></div></div>
+
+    <div class="promptbox">
+      <div class="pb-head"><span class="pb-label">Prompt 12 — Tu playbook de operación</span><button class="pb-copy" type="button">Copiar</button></div>
+      <pre>Armame el playbook de operación de mi tienda. Vendo <b>[PRODUCTO]</b> en <b>[PLATAFORMA]</b>, modelo <b>[sin stock / con stock]</b>, con despacho vía <b>[PROVEEDOR / CORREO / MÉTODO]</b>.
+
+Escribí el paso a paso EXACTO de qué hago cuando: (1) entra una venta — desde confirmar el pago hasta cargar el tracking, con tiempos máximos para cada paso, (2) un cliente pregunta dónde está su pedido, (3) llega un reclamo por demora, (4) llega un reclamo por producto dañado o distinto al publicado, y (5) piden una devolución.
+
+Para los casos 2 a 5, escribime la plantilla de respuesta lista para copiar (2-4 líneas, tono amable y resolutivo, español de <b>[PAÍS]</b>). El objetivo: proteger mi reputación y resolver rápido, sin regalar plata cuando el reclamo no corresponde.</pre>
+    </div>
+
+    <div class="promptbox">
+      <div class="pb-head"><span class="pb-label">Prompt 13 — Tu asistente de atención al cliente</span><button class="pb-copy" type="button">Copiar</button></div>
+      <pre>Vas a ser mi asistente de atención al cliente permanente. Producto: <b>[PRODUCTO]</b>. Plataforma: <b>[PLATAFORMA]</b>. Mis condiciones: <b>[ENVÍOS, GARANTÍA, TIEMPOS, DEVOLUCIONES]</b>.
+
+Cada vez que te pegue una pregunta o queja de un comprador, respondé en 2-3 líneas, tono amable y vendedor, cerrando siempre hacia la compra o la solución. Nunca prometas lo que mis condiciones no cubren. La reputación define mi visibilidad: velocidad y claridad son todo. Empecemos: <b>[PEGÁ LA PRIMERA PREGUNTA]</b></pre>
+    </div>
+    <div class="note"><div class="nl">Tarea del día 6</div><p>Playbook armado y plantillas guardadas. Hacé un simulacro: tomá las 5 preguntas más comunes de tu categoría (miralas en publicaciones de la competencia) y respondelas con tu asistente. Cuando entre la primera venta de verdad, ya vas a saber exactamente qué hacer.</p></div>
+  </div>
+</section>
+
+<!-- ==================== DIA 7 — MEDIR Y ESCALAR ==================== -->
+<section id="dia7">
+  <div class="wrap">
+    <div class="daytag">Día 7 · Medí, ajustá y escalá</div>
+    <h2>Matar o escalar: decisiones con <span class="g">datos.</span></h2>
+    <p class="lead" style="margin-bottom:1.4rem;">Estás a UN producto de cambiar tu situación. No hace falta acertarle a cien — hace falta acertarle a uno y escalarlo. Hoy armás el sistema para saber, con datos y no con ansiedad, si tu producto es ese o si hay que matarlo y volver al Día 2.</p>
+
+    <div class="two">
+      <div class="card">
+        <h4>¿Tenés visitas pero no vendés?</h4>
+        <p>El problema es la <strong>publicación</strong>: fotos, precio, confianza, descripción. Volvé al Día 4 y ajustá con el prompt de auditoría.</p>
+      </div>
+      <div class="card">
+        <h4>¿No tenés visitas?</h4>
+        <p>El problema es el <strong>tráfico</strong>: título y keywords en marketplace, o campaña en tienda propia. Volvé al Día 5. Un problema por vez. Sin drama.</p>
+      </div>
+    </div>
+
+    <div class="promptbox">
+      <div class="pb-head"><span class="pb-label">Prompt 14 — Tu analista de métricas semanal</span><button class="pb-copy" type="button">Copiar</button></div>
+      <pre>Vas a ser mi analista de negocio. Cada semana te voy a pegar las métricas de mi <b>[publicación / tienda]</b> de <b>[PRODUCTO]</b> y quiero un diagnóstico directo.
+
+Métricas de esta semana:
+- Visitas: <b>[X]</b>
+- Ventas: <b>[X]</b> (conversión: <b>[X% o "calculala"]</b>)
+- Precio: <b>[X]</b> · Ganancia por unidad: <b>[X]</b>
+- [Si corro ads] Gasto en publicidad: <b>[X]</b> · Costo por venta: <b>[X o "calculalo"]</b>
+- Preguntas recibidas y qué preguntan: <b>[RESUMEN]</b>
+
+Respondeme: (1) ¿mi problema principal está en el tráfico o en la conversión? Usá esta regla: visitas sin ventas = publicación; sin visitas = tráfico. (2) Las 3 acciones de mayor impacto para esta semana, en orden. (3) ¿La matemática sigue cerrando o algo se comió el margen? Sé brutal.</pre>
+    </div>
+
+    <div class="promptbox">
+      <div class="pb-head"><span class="pb-label">Prompt 15 — La decisión: matar, mantener o escalar</span><button class="pb-copy" type="button">Copiar</button></div>
+      <pre>Ayudame a tomar la decisión sobre <b>[PRODUCTO]</b> después de <b>[X días/semanas]</b> a la venta.
+
+Datos: <b>[VISITAS, VENTAS, GANANCIA POR UNIDAD, GASTO EN ADS SI HAY, RECLAMOS O DEVOLUCIONES]</b>. Mi modelo actual: <b>[sin stock / con stock]</b>. Capital disponible para escalar: <b>[MONTO]</b>.
+
+Evaluá las tres opciones con lógica de negocio: (1) MATAR — el producto no valida y conviene volver a la investigación con otro candidato, (2) MANTENER — hay señales pero falta ajustar publicación o tráfico antes de decidir, (3) ESCALAR — el producto validó: si estoy sin stock, calculame cuántas unidades me conviene comprar como primer stock (usando mis ventas por día y los tiempos del proveedor), cuánto capital necesito y cuánto mejora mi margen y mi control con stock propio.
+
+Dame UNA recomendación clara y el plan de los próximos 7 días. Recordá la estrategia: sin stock es el laboratorio; cuando algo funciona, se compra stock y se escala.</pre>
+    </div>
+
+    <div class="two" style="margin-top:2rem;">
+      <div>
+        <div class="colh">Checklist final — los 7 días completos</div>
+        <ul class="check">
+          <li>Plataforma y modelo definidos (Día 1).</li>
+          <li>Producto validado por datos y matemática (Día 2).</li>
+          <li>Proveedor confirmado — despacho en &lt;48 hs si vendés sin stock (Día 3).</li>
+          <li>Publicación o tienda montada + compra de prueba (Día 4).</li>
+          <li>SEO interno auditado o primera campaña activa (Día 5).</li>
+          <li>Playbook de operación y plantillas listas (Día 6).</li>
+          <li>Sistema semanal de métricas y decisión (Día 7).</li>
+        </ul>
+      </div>
+      <div>
+        <div class="colh">Después del día 7</div>
+        <p style="font-size:.92rem;">La primera venta puede tardar días. Es normal. Tu trabajo ahora es repetir el ciclo del Día 7 cada semana: medir, ajustar, decidir.</p>
+        <p style="font-size:.92rem;margin-top:.7rem;">El que llega a $100K/mes no es el que trabaja más horas. Es el que tiene los tres engranajes aceitados: <strong>producto que vende + tráfico constante + operación que no se rompe.</strong> Ya tenés los tres.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== ERRORES ==================== -->
+<section id="errores">
+  <div class="wrap">
+    <div class="kicker">Antes de que arranques</div>
+    <h2>Los 3 errores <span style="color:var(--red);">fatales.</span></h2>
+    <p class="lead" style="margin-bottom:1.6rem;">Estás a UN producto de cambiar tu situación. No hace falta acertarle a cien: hace falta acertarle a uno y escalarlo. Pero estos tres errores matan al 90% antes de llegar:</p>
+    <div class="step"><div class="stepnum" style="border-color:var(--red);color:var(--red);">1</div><div><h4>Elegir por gusto y no por datos</h4><p>Te enamorás de un producto porque a vos te gusta. El mercado no piensa como vos. Por eso existe el Día 2: grilla, competencia y calculadora antes de poner un peso.</p></div></div>
+    <div class="step"><div class="stepnum" style="border-color:var(--red);color:var(--red);">2</div><div><h4>Arrancar sin estructura</h4><p>Publicás, esperás, no vende, lo dejás. Sin proceso, es un hobby caro. Este manual ES la estructura: 7 días, una tarea por día, en orden.</p></div></div>
+    <div class="step"><div class="stepnum" style="border-color:var(--red);color:var(--red);">3</div><div><h4>Hacerlo completamente solo</h4><p>El más caro de todos. No es perder plata en un producto malo: es perder MESES haciendo las cosas mal porque nadie te explica cómo. La IA te acelera la ejecución — pero no reemplaza a alguien que ya recorrió el camino y te corrige antes de que el error te cueste.</p></div></div>
+    <div class="note"><div class="nl">Bonus: la IA también se usa mal</div><p>ChatGPT y Claude son tus empleados, no tus jefes. Todo lo que generan lo revisás, lo verificás y lo adaptás antes de publicar. Un dato inventado en tu publicación es una devolución garantizada.</p></div>
+  </div>
+</section>
+
+<!-- ==================== CTA NUM ==================== -->
+<section id="num" class="cta">
+  <div class="wrap">
+    <div class="kicker">Con esto claro, tenés dos caminos</div>
+    <h2 style="font-size:clamp(2rem,6vw,3.2rem);">La IA te arma la tienda.<br><span class="g">El negocio lo armás vos.</span></h2>
+    <div class="two">
+      <div class="card">
+        <h4 style="color:var(--dim);">Camino 1</h4>
+        <p>Lo intentás solo con este manual. Se puede, pero te va a costar: vas a cometer errores evitables, perder tiempo en YouTube y pasar por toda la frustración por la que pasó Mauro.</p>
+      </div>
+      <div class="card" style="border-color:var(--green);">
+        <h4>Camino 2</h4>
+        <p>Aprendés de alguien que ya recorrió el camino, que maneja +100 tiendas y tiene miles de alumnos con resultados — para implementar todo reduciendo al mínimo los errores y el tiempo.</p>
+      </div>
+    </div>
+    <p style="max-width:62ch;margin-top:1rem;">Eso es <strong style="color:var(--green);">NUM</strong>, la academia de comercio electrónico más grande de Latinoamérica: clases de las 4 plataformas (Mercado Libre, Amazon, Shopify y Tiendanube), clase semanal en vivo con Mauro, seguimiento, comunidad, y el curso completo para escalar a $10.000 USD/mes.</p>
+    <a class="ctabtn" href="https://admisiones.academianum.com/" target="_blank" rel="noopener">Aplicá a una llamada con el equipo →</a>
+    <p class="quote">"No soy especial. Solo encontré el modelo correcto y no paré. Vos tenés mucho más de lo que yo tenía cuando empecé." — <b>Mauro Stendel</b></p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap"><p>© NUM · Abrí tu Tienda en 7 Días con IA · Todos los prompts funcionan en ChatGPT y Claude.</p></div>
+</footer>
+
+<script>
+  // Botón "Copiar" en cada prompt
+  document.querySelectorAll('.pb-copy').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var pre = btn.closest('.promptbox').querySelector('pre');
+      var text = pre.innerText;
+      function ok(){
+        btn.textContent = '✓ Copiado';
+        btn.classList.add('done');
+        setTimeout(function(){ btn.textContent = 'Copiar'; btn.classList.remove('done'); }, 2000);
+      }
+      function fallback(){
+        var ta = document.createElement('textarea');
+        ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+        document.body.appendChild(ta); ta.select();
+        try{ document.execCommand('copy'); ok(); }catch(e){}
+        document.body.removeChild(ta);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(ok).catch(fallback);
+      } else { fallback(); }
+    });
+  });
+
+  // Selector de camino en el Día 4
+  var btnMp = document.getElementById('btn-mp'), btnTp = document.getElementById('btn-tp');
+  var pathMp = document.getElementById('path-mp'), pathTp = document.getElementById('path-tp');
+  function showPath(which){
+    var mp = which === 'mp';
+    btnMp.classList.toggle('active', mp);
+    btnTp.classList.toggle('active', !mp);
+    btnMp.setAttribute('aria-selected', mp);
+    btnTp.setAttribute('aria-selected', !mp);
+    pathMp.classList.toggle('visible', mp);
+    pathTp.classList.toggle('visible', !mp);
+  }
+  btnMp.addEventListener('click', function(){ showPath('mp'); });
+  btnTp.addEventListener('click', function(){ showPath('tp'); });
+</script>
+
+</body>
+</html>
