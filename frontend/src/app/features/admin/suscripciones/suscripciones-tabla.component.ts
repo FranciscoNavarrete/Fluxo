@@ -53,8 +53,10 @@ import { MonedaArgPipe } from '../../../shared/pipes/moneda-arg.pipe';
     :host-context(.dark) td.mat-cell { color: #cbd5e1; border-bottom: 1px solid rgba(255,255,255,0.04); }
     :host-context(.dark) tr.mat-row { border-bottom-color: rgba(99,102,241,0.08); }
     :host-context(.dark) tr.mat-row:hover { background: rgba(99,102,241,0.08); }
-    .fi { width:100%; border:1px solid #d1d5db; border-radius:8px; padding:9px 12px; font-size:14px; color:#111827; background:#fff; outline:none; box-sizing:border-box; font-family:Roboto,sans-serif; }
-    :host-context(.dark) .fi { border-color:#4b5563; background:#374151; color:#f3f4f6; }
+    .fi { width:100%; border-radius:8px; padding:9px 12px; font-size:14px; box-sizing:border-box; outline:none; font-family:Roboto,sans-serif; border:1px solid #d1d5db; background:#fff; color:#111827; transition:border-color 0.15s; }
+    .fi:focus { border-color:#6366f1; box-shadow:0 0 0 3px rgba(99,102,241,0.12); }
+    :host-context(.dark) .fi { border-color:rgba(99,102,241,0.3); background:#0f1e3d; color:#e2e8f0; }
+    :host-context(.dark) .fi:focus { border-color:#818cf8; }
   `],
   template: `
     <div>
@@ -71,7 +73,7 @@ import { MonedaArgPipe } from '../../../shared/pipes/moneda-arg.pipe';
       </div>
 
       <!-- Filtros -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 mb-5 shadow-sm">
+      <div class="bg-white dark:bg-[#0f1e3d] rounded-xl border border-gray-200 dark:border-indigo-900/30 p-4 mb-5 shadow-sm">
         <form [formGroup]="filtrosForm" (ngSubmit)="aplicarFiltros()"
               class="flex flex-wrap gap-3 items-end">
           <mat-form-field appearance="outline" class="w-44" subscriptSizing="dynamic">
@@ -104,7 +106,7 @@ import { MonedaArgPipe } from '../../../shared/pipes/moneda-arg.pipe';
       </div>
 
       <!-- Tabla -->
-      <div class="relative bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+      <div class="relative bg-white dark:bg-[#0f1e3d] rounded-xl border border-gray-200 dark:border-indigo-900/30 shadow-sm overflow-hidden">
         <mat-progress-bar *ngIf="cargando()" mode="indeterminate" class="absolute top-0 left-0 right-0" />
 
         <div *ngIf="!cargando() && suscripciones().length === 0"
@@ -199,10 +201,10 @@ import { MonedaArgPipe } from '../../../shared/pipes/moneda-arg.pipe';
          class="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50"
          (click)="cerrarModal()">
 
-      <div class="bg-white dark:bg-gray-800 rounded-2xl w-[480px] max-w-[94vw] overflow-hidden shadow-2xl"
+      <div class="bg-white dark:bg-[#0f1e3d] rounded-2xl w-[480px] max-w-[94vw] overflow-hidden shadow-2xl"
            (click)="$event.stopPropagation()">
 
-        <div class="flex items-center justify-between px-6 py-5 border-b border-gray-200 dark:border-gray-700">
+        <div class="flex items-center justify-between px-6 py-5 border-b border-gray-200 dark:border-indigo-900/30">
           <span class="text-[17px] font-semibold text-gray-900 dark:text-gray-100">Nueva Suscripción</span>
           <button mat-icon-button (click)="cerrarModal()">
             <mat-icon>close</mat-icon>
@@ -258,7 +260,7 @@ import { MonedaArgPipe } from '../../../shared/pipes/moneda-arg.pipe';
           </form>
         </div>
 
-        <div class="flex justify-end gap-2 px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+        <div class="flex justify-end gap-2 px-6 py-4 border-t border-gray-200 dark:border-indigo-900/30">
           <ng-container *ngIf="!modalResultado">
             <button mat-stroked-button (click)="cerrarModal()">Cancelar</button>
             <button mat-flat-button color="primary" (click)="crear()" [disabled]="crearForm.invalid || modalCargando">
@@ -384,7 +386,7 @@ export class SuscripcionesTablaComponent implements OnInit {
         this.cargarCobertura(res.items);
       },
       error: err => {
-        this.snackBar.open(err.message, 'OK', { duration: 5000 });
+        this.snackBar.open(err.message, 'OK', { duration: 5000, panelClass: 'snack-error' });
         this.cargando.set(false);
       },
     });

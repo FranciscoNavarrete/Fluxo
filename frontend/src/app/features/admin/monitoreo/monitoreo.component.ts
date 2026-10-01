@@ -139,7 +139,7 @@ export class MonitoreoComponent {
         this.ejecutandoDunning.set(false);
       },
       error: err => {
-        this.snackBar.open(err.message, 'OK', { duration: 5000 });
+        this.snackBar.open(err.message, 'OK', { duration: 5000, panelClass: 'snack-error' });
         this.ejecutandoDunning.set(false);
       },
     });

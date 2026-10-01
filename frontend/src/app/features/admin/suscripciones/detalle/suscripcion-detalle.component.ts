@@ -323,12 +323,12 @@ export class SuscripcionDetalleComponent implements OnInit {
     this.cancelando.set(true);
     this.suscSvc.cancelarSuscripcion({ mpSuscripcionId: id, motivo: 'Cancelado por administrador' }).subscribe({
       next: () => {
-        this.snackBar.open('Suscripción cancelada correctamente', 'OK', { duration: 4000 });
+        this.snackBar.open('Suscripción cancelada correctamente', 'OK', { duration: 4000, panelClass: 'snack-ok' });
         this.cancelando.set(false);
         this.cargar(id);
       },
       error: err => {
-        this.snackBar.open(err.message, 'OK', { duration: 5000 });
+        this.snackBar.open(err.message, 'OK', { duration: 5000, panelClass: 'snack-error' });
         this.cancelando.set(false);
       },
     });
@@ -353,7 +353,7 @@ export class SuscripcionDetalleComponent implements OnInit {
         this.cargando.set(false);
       },
       error: err => {
-        this.snackBar.open(err.message, 'OK', { duration: 5000 });
+        this.snackBar.open(err.message, 'OK', { duration: 5000, panelClass: 'snack-error' });
         this.cargando.set(false);
       },
     });

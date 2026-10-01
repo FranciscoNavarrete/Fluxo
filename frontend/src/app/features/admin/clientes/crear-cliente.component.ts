@@ -26,8 +26,17 @@ interface CrearClienteResult {
     MatButtonModule, MatIconModule, MatProgressSpinnerModule, MonedaArgPipe,
   ],
   styles: [`
-    .fi { width:100%; border:1px solid #d1d5db; border-radius:8px; padding:9px 12px; font-size:14px; color:#111827; background:#fff; outline:none; box-sizing:border-box; font-family:Roboto,sans-serif; }
-    :host-context(.dark) .fi { border-color:#4b5563; background:#374151; color:#f3f4f6; }
+    .fi {
+      width: 100%; border-radius: 8px; padding: 9px 12px; font-size: 14px;
+      box-sizing: border-box; outline: none; font-family: Roboto, sans-serif;
+      border: 1px solid #d1d5db; background: #fff; color: #111827;
+      transition: border-color 0.15s;
+    }
+    .fi:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.12); }
+    :host-context(.dark) .fi { border-color: rgba(99,102,241,0.3); background: #0f1e3d; color: #e2e8f0; }
+    :host-context(.dark) .fi:focus { border-color: #818cf8; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+    .fi-label { display:block; font-size:13px; font-weight:500; margin-bottom:4px; color:#374151; }
+    :host-context(.dark) .fi-label { color: #94a3b8; }
   `],
   template: `
     <div class="max-w-2xl">
@@ -39,7 +48,7 @@ interface CrearClienteResult {
       </div>
 
       <!-- Resultado exitoso -->
-      <div *ngIf="resultado()" class="bg-white dark:bg-gray-800 rounded-xl border border-green-200 dark:border-green-700 shadow-sm overflow-hidden mb-6">
+      <div *ngIf="resultado()" class="bg-white dark:bg-[#0f1e3d] rounded-xl border border-green-200 dark:border-green-700 shadow-sm overflow-hidden mb-6">
         <div class="bg-green-50 px-6 py-4 border-b border-green-200 flex items-center gap-2">
           <mat-icon class="text-green-600">check_circle</mat-icon>
           <span class="font-semibold text-green-800">Cliente creado correctamente</span>
@@ -105,13 +114,14 @@ interface CrearClienteResult {
       </div>
 
       <!-- Formulario -->
-      <div *ngIf="!resultado()" class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div *ngIf="!resultado()"
+           class="bg-white dark:bg-[#0f1e3d] rounded-xl border border-gray-200 dark:border-indigo-900/30 shadow-sm overflow-hidden">
 
         <!-- Error -->
         <div *ngIf="errorMsg()" class="px-6 pt-4">
-          <div class="px-4 py-3 rounded-lg bg-red-50 border border-red-200 flex items-start gap-2">
+          <div class="px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/40 flex items-start gap-2">
             <mat-icon class="text-red-500 text-[18px] mt-0.5 shrink-0">error_outline</mat-icon>
-            <p class="text-sm text-red-700">{{ errorMsg() }}</p>
+            <p class="text-sm text-red-700 dark:text-red-400">{{ errorMsg() }}</p>
           </div>
         </div>
 
@@ -120,60 +130,53 @@ interface CrearClienteResult {
           <!-- Nombre y Apellido -->
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
-              <input type="text" formControlName="nombre" placeholder="Juan"
-                     style="width:100%;border:1px solid #d1d5db;border-radius:8px;padding:9px 12px;font-size:14px;box-sizing:border-box;outline:none"/>
+              <label class="fi-label">Nombre *</label>
+              <input type="text" formControlName="nombre" placeholder="Juan" class="fi" />
               <p *ngIf="form.get('nombre')?.invalid && form.get('nombre')?.touched"
-                 class="text-xs text-red-600 mt-1">Requerido</p>
+                 class="text-xs text-red-500 mt-1">Requerido</p>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Apellido *</label>
-              <input type="text" formControlName="apellido" placeholder="Pérez"
-                     style="width:100%;border:1px solid #d1d5db;border-radius:8px;padding:9px 12px;font-size:14px;box-sizing:border-box;outline:none"/>
+              <label class="fi-label">Apellido *</label>
+              <input type="text" formControlName="apellido" placeholder="Pérez" class="fi" />
               <p *ngIf="form.get('apellido')?.invalid && form.get('apellido')?.touched"
-                 class="text-xs text-red-600 mt-1">Requerido</p>
+                 class="text-xs text-red-500 mt-1">Requerido</p>
             </div>
           </div>
 
           <!-- Email -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-            <input type="email" formControlName="email" placeholder="cliente@email.com"
-                   style="width:100%;border:1px solid #d1d5db;border-radius:8px;padding:9px 12px;font-size:14px;box-sizing:border-box;outline:none"/>
+            <label class="fi-label">Email *</label>
+            <input type="email" formControlName="email" placeholder="cliente@email.com" class="fi" />
             <p *ngIf="form.get('email')?.invalid && form.get('email')?.touched"
-               class="text-xs text-red-600 mt-1">Email válido requerido</p>
+               class="text-xs text-red-500 mt-1">Email válido requerido</p>
           </div>
 
           <!-- Teléfono -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono (opcional)</label>
-            <input type="tel" formControlName="telefono" placeholder="+54 11 1234-5678"
-                   style="width:100%;border:1px solid #d1d5db;border-radius:8px;padding:9px 12px;font-size:14px;box-sizing:border-box;outline:none"/>
+            <label class="fi-label">Teléfono (opcional)</label>
+            <input type="tel" formControlName="telefono" placeholder="+54 11 1234-5678" class="fi" />
           </div>
 
           <!-- Plan (opcional) -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Plan (opcional)</label>
-            <select formControlName="mpPlanId"
-                    style="width:100%;border:1px solid #d1d5db;border-radius:8px;padding:9px 12px;font-size:14px;background:#fff;box-sizing:border-box;outline:none">
+            <label class="fi-label">Plan (opcional)</label>
+            <select formControlName="mpPlanId" class="fi">
               <option value="">Sin suscripción por ahora</option>
               <option *ngFor="let p of planes()" [value]="p.mpPlanId">
                 {{ p.nombre }} — {{ p.monto | monedaArg:p.moneda }}
               </option>
             </select>
-            <p class="text-xs text-gray-400 mt-1">Si elegís un plan se genera el link de pago de Mercado Pago.</p>
+            <p class="text-xs text-gray-400 dark:text-slate-500 mt-1">Si elegís un plan se genera el link de pago de Mercado Pago.</p>
           </div>
 
-          <!-- Día de cobro (solo si se eligió un plan) -->
+          <!-- Día de cobro -->
           <div *ngIf="form.get('mpPlanId')?.value">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Día de cobro (opcional)</label>
-            <input type="number" formControlName="diaCobro" placeholder="Ej: 10"
-                   min="1" max="31"
-                   style="width:100%;border:1px solid #d1d5db;border-radius:8px;padding:9px 12px;font-size:14px;box-sizing:border-box;outline:none"/>
-            <p class="text-xs text-gray-400 mt-1">Día del mes en que se cobra (1-31). Si el mes no tiene ese día se usa el último día disponible.</p>
+            <label class="fi-label">Día de cobro (opcional)</label>
+            <input type="number" formControlName="diaCobro" placeholder="Ej: 10" min="1" max="31" class="fi" />
+            <p class="text-xs text-gray-400 dark:text-slate-500 mt-1">Día del mes en que se cobra (1-31). Si el mes no tiene ese día se usa el último día disponible.</p>
           </div>
 
-          <div class="pt-2 border-t border-gray-100">
+          <div class="pt-2 border-t border-gray-100 dark:border-indigo-900/20">
             <button mat-flat-button color="primary" type="submit"
                     class="w-full h-11" [disabled]="form.invalid || cargando()">
               <mat-spinner *ngIf="cargando()" diameter="18" class="inline-block mr-2"></mat-spinner>

@@ -99,10 +99,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "credigial-frontend:build:production"
+              "browserTarget": "fluxo-frontend:build:production"
             },
             "development": {
-              "browserTarget": "credigial-frontend:build:development"
+              "browserTarget": "fluxo-frontend:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -110,7 +110,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "credigial-frontend:build"
+            "browserTarget": "fluxo-frontend:build"
           }
         },
         "test": {

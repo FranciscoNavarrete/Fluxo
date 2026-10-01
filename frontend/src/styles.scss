@@ -45,6 +45,12 @@ html, body {
   margin: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
   background-color: #f5f5f5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.1s ease;
 }
 
 html.dark, html.dark body {
@@ -131,8 +137,11 @@ html.dark, html.dark body {
   // ── Snackbar ───────────────────────────────────────────────────────────────
   .mdc-snackbar__surface {
     background: #1e3a6e !important;
-    border: 1px solid rgba(99,102,241,0.25);
+    border: 1px solid rgba(99,102,241,0.3);
+    color: #e2e8f0 !important;
   }
+  .mat-mdc-snack-bar-label { color: #e2e8f0 !important; }
+  .mat-mdc-snack-bar-action .mdc-button__label { color: #818cf8 !important; font-weight: 600; }
 
   // ── Progress bar ───────────────────────────────────────────────────────────
   .mat-mdc-progress-bar {
@@ -201,5 +210,42 @@ mat-icon, .mat-icon {
 }
 
 .card {
-  @apply bg-white rounded-xl shadow-sm p-6;
+  @apply bg-white dark:bg-[#0f1e3d] rounded-xl shadow-sm p-6
+         border border-gray-200 dark:border-indigo-900/25;
+}
+
+// ── Snackbar global (light + panelClass) ────────────────────────────────────
+.snack-error .mdc-snackbar__surface {
+  background: #dc2626 !important;
+  border: none;
+  color: #fff !important;
+}
+.snack-error .mat-mdc-snack-bar-label { color: #fff !important; }
+.snack-error .mat-mdc-snack-bar-action .mdc-button__label { color: #fecaca !important; font-weight: 600; }
+
+.snack-ok .mdc-snackbar__surface {
+  background: #16a34a !important;
+  border: none;
+  color: #fff !important;
+}
+.snack-ok .mat-mdc-snack-bar-label { color: #fff !important; }
+.snack-ok .mat-mdc-snack-bar-action .mdc-button__label { color: #bbf7d0 !important; font-weight: 600; }
+
+// ── Light theme: mejorar contraste de tablas Material ────────────────────────
+:not(.dark) {
+  th.mat-header-cell {
+    background: #f8fafc !important;
+    color: #475569 !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+  }
+  td.mat-cell {
+    color: #1e293b !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+  }
+  tr.mat-mdc-row:hover { background: #eff6ff !important; }
+  .mat-mdc-paginator {
+    background: #f8fafc !important;
+    border-top: 1px solid #e2e8f0;
+    color: #64748b !important;
+  }
 }

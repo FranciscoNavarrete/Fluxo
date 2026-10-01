@@ -287,7 +287,7 @@ export class PlanesComponent implements OnInit {
       }).subscribe({
         next: plan => {
           this.planes.update(lista => lista.map(p => p.mpPlanId === plan.mpPlanId ? plan : p));
-          this.snackBar.open(`Plan "${plan.nombre}" actualizado.`, 'OK', { duration: 3000 });
+          this.snackBar.open(`Plan "${plan.nombre}" actualizado.`, 'OK', { duration: 3000, panelClass: 'snack-ok' });
           this.cancelarFormulario();
           this.guardando.set(false);
         },
@@ -305,7 +305,7 @@ export class PlanesComponent implements OnInit {
       }).subscribe({
         next: plan => {
           this.planes.update(lista => [plan, ...lista]);
-          this.snackBar.open(`Plan "${plan.nombre}" creado correctamente.`, 'OK', { duration: 3000 });
+          this.snackBar.open(`Plan "${plan.nombre}" creado correctamente.`, 'OK', { duration: 3000, panelClass: 'snack-ok' });
           this.cancelarFormulario();
           this.guardando.set(false);
         },
@@ -339,11 +339,11 @@ export class PlanesComponent implements OnInit {
     this.suscSvc.eliminarPlan(plan.mpPlanId).subscribe({
       next: () => {
         this.planes.update(lista => lista.filter(p => p.mpPlanId !== plan.mpPlanId));
-        this.snackBar.open(`Plan "${plan.nombre}" eliminado.`, 'OK', { duration: 3000 });
+        this.snackBar.open(`Plan "${plan.nombre}" eliminado.`, 'OK', { duration: 3000, panelClass: 'snack-ok' });
         this.procesando.set(null);
       },
       error: err => {
-        this.snackBar.open(err.message ?? 'No se pudo eliminar el plan.', 'OK', { duration: 5000 });
+        this.snackBar.open(err.message ?? 'No se pudo eliminar el plan.', 'OK', { duration: 5000, panelClass: 'snack-error' });
         this.procesando.set(null);
       },
     });
@@ -379,12 +379,12 @@ export class PlanesComponent implements OnInit {
         );
         this.snackBar.open(
           `Plan "${planActualizado.nombre}" ${activo ? 'activado' : 'desactivado'}.`,
-          'OK', { duration: 3000 },
+          'OK', { duration: 3000, panelClass: 'snack-ok' },
         );
         this.procesando.set(null);
       },
       error: err => {
-        this.snackBar.open(err.message, 'OK', { duration: 5000 });
+        this.snackBar.open(err.message, 'OK', { duration: 5000, panelClass: 'snack-error' });
         this.cargar();
         this.procesando.set(null);
       },
@@ -395,7 +395,7 @@ export class PlanesComponent implements OnInit {
     this.cargando.set(true);
     this.suscSvc.getPlanes().subscribe({
       next: planes => { this.planes.set(planes); this.cargando.set(false); },
-      error: err => { this.snackBar.open(err.message, 'OK', { duration: 5000 }); this.cargando.set(false); },
+      error: err => { this.snackBar.open(err.message, 'OK', { duration: 5000, panelClass: 'snack-error' }); this.cargando.set(false); },
     });
   }
 }
