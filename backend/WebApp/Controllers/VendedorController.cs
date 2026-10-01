@@ -13,9 +13,14 @@ namespace WebApp.Controllers;
 [AllowAnonymous]
 public class VendedorController : BaseApiController
 {
-    private readonly IAuthLogic _authLogic;
+    private readonly IAuthLogic   _authLogic;
+    private readonly IMpPlanLogic _planLogic;
 
-    public VendedorController(IAuthLogic authLogic) => _authLogic = authLogic;
+    public VendedorController(IAuthLogic authLogic, IMpPlanLogic planLogic)
+    {
+        _authLogic = authLogic;
+        _planLogic = planLogic;
+    }
 
     /// <summary>
     /// Crea el cliente + usuario + suscripción en Fluxo para un negocio nuevo de GestorPOS.
@@ -28,5 +33,13 @@ public class VendedorController : BaseApiController
         var usuarioSistemaId = await _authLogic.ObtenerOCrearUsuarioSistemaIdAsync();
         var resultado = await _authLogic.CrearClienteAdminAsync(request, usuarioSistemaId);
         return resultado.Exitoso ? Ok(resultado) : BadRequest(resultado);
+    }
+
+    /// <summary>Planes activos, para que GestorPOS deje elegir cuál asignarle al negocio nuevo.</summary>
+    [HttpGet("planes")]
+    public async Task<IActionResult> ListarPlanes()
+    {
+        var resultado = await _planLogic.ListarActivosAsync();
+        return Ok(resultado);
     }
 }
