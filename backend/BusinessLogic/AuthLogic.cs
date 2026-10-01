@@ -5,6 +5,7 @@ using System.Text;
 using MercadoPago.Client.Preapproval;
 using MercadoPago.Config;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Models.DTOs;
 using Models.Entities;
@@ -16,13 +17,15 @@ namespace BusinessLogic;
 
 public class AuthLogic : IAuthLogic
 {
-    private readonly IUnitOfWork    _uow;
-    private readonly IConfiguration _config;
+    private readonly IUnitOfWork       _uow;
+    private readonly IConfiguration    _config;
+    private readonly ILogger<AuthLogic> _logger;
 
-    public AuthLogic(IUnitOfWork uow, IConfiguration config)
+    public AuthLogic(IUnitOfWork uow, IConfiguration config, ILogger<AuthLogic> logger)
     {
         _uow    = uow;
         _config = config;
+        _logger = logger;
     }
 
     // ── Login ──────────────────────────────────────────────────────────────
@@ -198,10 +201,11 @@ public class AuthLogic : IAuthLogic
                         resultado.InitPoint       = mpResponse.InitPoint;
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
                     // La suscripción falló pero el cliente ya fue creado — no revertimos
                     // El admin puede crear la suscripción por separado
+                    _logger.LogError(ex, "Falló la creación de la suscripción MP para clienteId={ClienteId} planId={PlanId}", clienteId, plan.MpPlanId);
                 }
             }
         }
