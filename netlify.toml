@@ -1,7 +1,12 @@
 [build]
   base    = "frontend"
-  command = "npm run build -- --configuration=production"
+  command = "npm run build"
   publish = "dist/fluxo-frontend"
+
+# Rama qas: build apuntando al backend de QAS (Railway, ambiente "qas") en vez de al de
+# producción — ver frontend/src/environments/environment.qas.ts.
+[context.qas]
+  command = "npm run build:qas"
 
 [[redirects]]
   from   = "/*"

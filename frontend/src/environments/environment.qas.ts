@@ -1,5 +1,5 @@
 export const environment = {
-  production: true,
-  apiUrl: 'https://fluxo-production-ecf3.up.railway.app/api',
+  production: false,
+  apiUrl: 'https://fluxo-qas-f6ee.up.railway.app/api',
   mpPublicKey: 'APP_USR-6ea8755c-a5a8-4f98-a53c-d6a7e3431d9f',
 };
