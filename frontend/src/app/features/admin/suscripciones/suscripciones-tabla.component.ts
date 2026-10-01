@@ -51,8 +51,8 @@ import { MonedaArgPipe } from '../../../shared/pipes/moneda-arg.pipe';
     tr.mat-row:hover { background: #eff6ff; }
     :host-context(.dark) th.mat-header-cell { color: #7c8ba6; background: rgba(8,15,30,0.5); border-bottom: 1px solid rgba(99,102,241,0.12); }
     :host-context(.dark) td.mat-cell { color: #cbd5e1; border-bottom: 1px solid rgba(255,255,255,0.04); }
-    :host-context(.dark) tr.mat-row { border-bottom-color: rgba(99,102,241,0.08); }
-    :host-context(.dark) tr.mat-row:hover { background: rgba(99,102,241,0.08); }
+    :host-context(.dark) tr.mat-row { border-bottom-color: rgba(99,102,241,0.1); }
+    :host-context(.dark) tr.mat-row:hover td.mat-cell { background: rgba(99,102,241,0.12) !important; }
     .fi { width:100%; border-radius:8px; padding:9px 12px; font-size:14px; box-sizing:border-box; outline:none; font-family:Roboto,sans-serif; border:1px solid #d1d5db; background:#fff; color:#111827; transition:border-color 0.15s; }
     .fi:focus { border-color:#6366f1; box-shadow:0 0 0 3px rgba(99,102,241,0.12); }
     :host-context(.dark) .fi { border-color:rgba(99,102,241,0.3); background:#0f1e3d; color:#e2e8f0; }
@@ -121,14 +121,14 @@ import { MonedaArgPipe } from '../../../shared/pipes/moneda-arg.pipe';
             <ng-container matColumnDef="cliente">
               <th mat-header-cell *matHeaderCellDef>Cliente</th>
               <td mat-cell *matCellDef="let row">
-                <span class="font-medium text-gray-800">{{ row.clienteNombre || '—' }}</span>
-                <span class="block text-xs text-gray-400">{{ row.clienteEmail }}</span>
+                <span class="font-medium text-gray-900 dark:text-slate-100">{{ row.clienteNombre || '—' }}</span>
+                <span class="block text-xs text-gray-400 dark:text-slate-500">{{ row.clienteEmail }}</span>
               </td>
             </ng-container>
 
             <ng-container matColumnDef="plan">
               <th mat-header-cell *matHeaderCellDef>Plan</th>
-              <td mat-cell *matCellDef="let row" class="text-gray-700">{{ row.planNombre }}</td>
+              <td mat-cell *matCellDef="let row" class="text-gray-700 dark:text-slate-300">{{ row.planNombre }}</td>
             </ng-container>
 
             <ng-container matColumnDef="estado">
@@ -137,7 +137,7 @@ import { MonedaArgPipe } from '../../../shared/pipes/moneda-arg.pipe';
                 <div class="flex items-center gap-2">
                   <app-badge-estado [estado]="row.estado" />
                   <span *ngIf="clientesCubiertos().has(row.clienteId) && (row.estado === 'paused' || row.estado === 'suspended')"
-                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-100 text-green-700">
+                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
                     <mat-icon style="font-size:10px;width:10px;height:10px;line-height:10px">check_circle</mat-icon>
                     Cubierto
                   </span>
@@ -147,14 +147,14 @@ import { MonedaArgPipe } from '../../../shared/pipes/moneda-arg.pipe';
 
             <ng-container matColumnDef="fechaInicio">
               <th mat-header-cell *matHeaderCellDef>Inicio</th>
-              <td mat-cell *matCellDef="let row" class="text-gray-600">
+              <td mat-cell *matCellDef="let row" class="text-gray-600 dark:text-slate-400">
                 {{ row.fechaInicio | date:'dd/MM/yyyy' }}
               </td>
             </ng-container>
 
             <ng-container matColumnDef="proximoCobro">
               <th mat-header-cell *matHeaderCellDef>Próximo cobro</th>
-              <td mat-cell *matCellDef="let row" class="text-gray-600">
+              <td mat-cell *matCellDef="let row" class="text-gray-600 dark:text-slate-400">
                 {{ row.proximoCobro ? (row.proximoCobro | date:'dd/MM/yyyy') : '—' }}
               </td>
             </ng-container>
@@ -162,7 +162,9 @@ import { MonedaArgPipe } from '../../../shared/pipes/moneda-arg.pipe';
             <ng-container matColumnDef="intentos">
               <th mat-header-cell *matHeaderCellDef>Reintentos</th>
               <td mat-cell *matCellDef="let row" class="text-center">
-                <span [class.text-red-600]="row.intentosReintento > 2"
+                <span class="text-gray-700 dark:text-slate-300"
+                      [class.text-red-500]="row.intentosReintento > 2"
+                      [class.dark:text-red-400]="row.intentosReintento > 2"
                       [class.font-semibold]="row.intentosReintento > 2">
                   {{ row.intentosReintento }}
                 </span>
@@ -173,12 +175,12 @@ import { MonedaArgPipe } from '../../../shared/pipes/moneda-arg.pipe';
               <th mat-header-cell *matHeaderCellDef></th>
               <td mat-cell *matCellDef="let row">
                 <button mat-icon-button (click)="$event.stopPropagation(); verDetalle(row)">
-                  <mat-icon class="text-gray-400">chevron_right</mat-icon>
+                  <mat-icon class="text-gray-400 dark:text-slate-500">chevron_right</mat-icon>
                 </button>
               </td>
             </ng-container>
 
-            <tr mat-header-row *matHeaderRowDef="columnas" class="bg-gray-50"></tr>
+            <tr mat-header-row *matHeaderRowDef="columnas" class="bg-gray-50 dark:bg-[#080f1e]"></tr>
             <tr mat-row *matRowDef="let row; columns: columnas" (click)="verDetalle(row)"></tr>
           </table>
         </div>
