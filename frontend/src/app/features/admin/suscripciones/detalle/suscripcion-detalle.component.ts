@@ -68,6 +68,18 @@ import { DunningLog, MpPagoUnico, MpTransaccion, MpSuscripcion } from '../../../
 
       <ng-container *ngIf="!cargando() && suscripcion()">
 
+        <!-- Banner: todavía no cargó la tarjeta — reenviar el link de pago -->
+        <div *ngIf="suscripcion()!.estado === 'pending' && suscripcion()!.initPoint"
+             class="mb-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 px-5 py-4 flex gap-3 items-start">
+          <mat-icon class="text-amber-500 mt-0.5" style="font-size:20px;width:20px;height:20px;line-height:20px">link</mat-icon>
+          <div class="flex-1">
+            <p class="text-sm font-semibold text-amber-800 dark:text-amber-300">El cliente todavía no cargó la tarjeta</p>
+            <p class="text-sm text-amber-700 dark:text-amber-400 mt-0.5 break-all">
+              <a [href]="suscripcion()!.initPoint" target="_blank" rel="noopener" class="underline">{{ suscripcion()!.initPoint }}</a>
+            </p>
+          </div>
+        </div>
+
         <!-- Banner: cubierto por pago único este mes -->
         <div *ngIf="pagoUnicoEsteMes() && suscripcion()!.estado !== 'authorized'"
              class="mb-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/40 px-5 py-4 flex gap-3 items-start">
