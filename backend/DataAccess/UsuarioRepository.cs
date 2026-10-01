@@ -14,11 +14,11 @@ public class UsuarioRepository : IUsuarioRepository
     public Task<Usuario?> GetByIdAsync(int id)
         => _db.GetAsync<Usuario>(id)!;
 
-    public async Task<int> InsertAsync(Usuario entity)
-        => (int)await _db.InsertAsync(entity);
+    public Task<int> InsertAsync(Usuario entity)
+        => _db.InsertLowercaseAsync(entity);
 
     public Task<bool> UpdateAsync(Usuario entity)
-        => _db.UpdateAsync(entity);
+        => _db.UpdateLowercaseAsync(entity);
 
     public Task<bool> DeleteAsync(Usuario entity)
         => _db.DeleteAsync(entity);

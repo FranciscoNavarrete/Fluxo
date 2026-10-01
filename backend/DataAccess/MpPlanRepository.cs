@@ -16,11 +16,11 @@ public class MpPlanRepository : IMpPlanRepository
     public Task<MpPlan?> GetByIdAsync(int id)
         => _db.GetAsync<MpPlan>(id)!;
 
-    public async Task<int> InsertAsync(MpPlan entity)
-        => (int)await _db.InsertAsync(entity);
+    public Task<int> InsertAsync(MpPlan entity)
+        => _db.InsertLowercaseAsync(entity);
 
     public Task<bool> UpdateAsync(MpPlan entity)
-        => _db.UpdateAsync(entity);
+        => _db.UpdateLowercaseAsync(entity);
 
     public Task<bool> DeleteAsync(MpPlan entity)
         => _db.DeleteAsync(entity);

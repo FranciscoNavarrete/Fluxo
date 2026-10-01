@@ -15,11 +15,11 @@ public class MpPagoUnicoRepository : IMpPagoUnicoRepository
     public Task<MpPagoUnico?> GetByIdAsync(int id)
         => _db.GetAsync<MpPagoUnico>(id)!;
 
-    public async Task<int> InsertAsync(MpPagoUnico entity)
-        => (int)await _db.InsertAsync(entity);
+    public Task<int> InsertAsync(MpPagoUnico entity)
+        => _db.InsertLowercaseAsync(entity);
 
     public Task<bool> UpdateAsync(MpPagoUnico entity)
-        => _db.UpdateAsync(entity);
+        => _db.UpdateLowercaseAsync(entity);
 
     public Task<bool> DeleteAsync(MpPagoUnico entity)
         => _db.DeleteAsync(entity);

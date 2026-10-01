@@ -17,11 +17,11 @@ public class MpSuscripcionRepository : IMpSuscripcionRepository
     public Task<MpSuscripcion?> GetByIdAsync(int id)
         => _db.GetAsync<MpSuscripcion>(id)!;
 
-    public async Task<int> InsertAsync(MpSuscripcion entity)
-        => (int)await _db.InsertAsync(entity);
+    public Task<int> InsertAsync(MpSuscripcion entity)
+        => _db.InsertLowercaseAsync(entity);
 
     public Task<bool> UpdateAsync(MpSuscripcion entity)
-        => _db.UpdateAsync(entity);
+        => _db.UpdateLowercaseAsync(entity);
 
     public Task<bool> DeleteAsync(MpSuscripcion entity)
         => _db.DeleteAsync(entity);

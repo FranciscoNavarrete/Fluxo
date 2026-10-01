@@ -15,11 +15,11 @@ public class MpDunningLogRepository : IMpDunningLogRepository
     public Task<MpDunningLog?> GetByIdAsync(int id)
         => _db.GetAsync<MpDunningLog>(id)!;
 
-    public async Task<int> InsertAsync(MpDunningLog entity)
-        => (int)await _db.InsertAsync(entity);
+    public Task<int> InsertAsync(MpDunningLog entity)
+        => _db.InsertLowercaseAsync(entity);
 
     public Task<bool> UpdateAsync(MpDunningLog entity)
-        => _db.UpdateAsync(entity);
+        => _db.UpdateLowercaseAsync(entity);
 
     public Task<bool> DeleteAsync(MpDunningLog entity)
         => _db.DeleteAsync(entity);

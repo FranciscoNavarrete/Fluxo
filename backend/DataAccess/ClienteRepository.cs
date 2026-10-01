@@ -14,11 +14,11 @@ public class ClienteRepository : IClienteRepository
     public Task<Cliente?> GetByIdAsync(int id)
         => _db.GetAsync<Cliente>(id)!;
 
-    public async Task<int> InsertAsync(Cliente entity)
-        => (int)await _db.InsertAsync(entity);
+    public Task<int> InsertAsync(Cliente entity)
+        => _db.InsertLowercaseAsync(entity);
 
     public Task<bool> UpdateAsync(Cliente entity)
-        => _db.UpdateAsync(entity);
+        => _db.UpdateLowercaseAsync(entity);
 
     public Task<bool> DeleteAsync(Cliente entity)
         => _db.DeleteAsync(entity);

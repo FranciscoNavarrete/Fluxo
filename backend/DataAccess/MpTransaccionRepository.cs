@@ -16,11 +16,11 @@ public class MpTransaccionRepository : IMpTransaccionRepository
     public Task<MpTransaccion?> GetByIdAsync(int id)
         => _db.GetAsync<MpTransaccion>(id)!;
 
-    public async Task<int> InsertAsync(MpTransaccion entity)
-        => (int)await _db.InsertAsync(entity);
+    public Task<int> InsertAsync(MpTransaccion entity)
+        => _db.InsertLowercaseAsync(entity);
 
     public Task<bool> UpdateAsync(MpTransaccion entity)
-        => _db.UpdateAsync(entity);
+        => _db.UpdateLowercaseAsync(entity);
 
     public Task<bool> DeleteAsync(MpTransaccion entity)
         => _db.DeleteAsync(entity);
