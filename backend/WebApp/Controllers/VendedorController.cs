@@ -13,13 +13,15 @@ namespace WebApp.Controllers;
 [AllowAnonymous]
 public class VendedorController : BaseApiController
 {
-    private readonly IAuthLogic   _authLogic;
-    private readonly IMpPlanLogic _planLogic;
+    private readonly IAuthLogic          _authLogic;
+    private readonly IMpPlanLogic        _planLogic;
+    private readonly IMpSuscripcionLogic _suscripcionLogic;
 
-    public VendedorController(IAuthLogic authLogic, IMpPlanLogic planLogic)
+    public VendedorController(IAuthLogic authLogic, IMpPlanLogic planLogic, IMpSuscripcionLogic suscripcionLogic)
     {
         _authLogic = authLogic;
         _planLogic = planLogic;
+        _suscripcionLogic = suscripcionLogic;
     }
 
     /// <summary>
@@ -40,6 +42,28 @@ public class VendedorController : BaseApiController
     public async Task<IActionResult> ListarPlanes()
     {
         var resultado = await _planLogic.ListarActivosAsync();
+        return Ok(resultado);
+    }
+
+    /// <summary>
+    /// Estado (pending/authorized/paused/...) de un lote de suscripciones, para que GestorPOS
+    /// pinte "Pendiente"/"Suscripto" en su listado de negocios sin pegarle a Fluxo una vez por
+    /// cada uno. ids va separado por comas: ?ids=1,2,3
+    /// </summary>
+    [HttpGet("suscripciones/estados")]
+    public async Task<IActionResult> ObtenerEstadosSuscripciones([FromQuery] string ids)
+    {
+        var idsParseados = (ids ?? string.Empty)
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(id => int.TryParse(id, out var n) ? n : (int?)null)
+            .Where(n => n.HasValue)
+            .Select(n => n!.Value)
+            .ToArray();
+
+        if (idsParseados.Length == 0)
+            return Ok(new { exitoso = true, mensaje = "", contenido = Array.Empty<object>() });
+
+        var resultado = await _suscripcionLogic.ObtenerEstadosAsync(idsParseados);
         return Ok(resultado);
     }
 }

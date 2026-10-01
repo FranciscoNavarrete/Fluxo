@@ -26,6 +26,15 @@ public class MpSuscripcionRepository : IMpSuscripcionRepository
     public Task<bool> DeleteAsync(MpSuscripcion entity)
         => _db.DeleteAsync(entity);
 
+    public async Task<IEnumerable<MpSuscripcion>> ObtenerPorIdsAsync(IEnumerable<int> ids)
+    {
+        const string sql = """
+            SELECT * FROM MpSuscripciones
+            WHERE MpSuscripcionId = ANY(@Ids)
+            """;
+        return await _db.QueryAsync<MpSuscripcion>(sql, new { Ids = ids.ToArray() });
+    }
+
     public async Task<MpSuscripcionDto?> ObtenerConDetalleAsync(int mpSuscripcionId)
     {
         const string sql = """

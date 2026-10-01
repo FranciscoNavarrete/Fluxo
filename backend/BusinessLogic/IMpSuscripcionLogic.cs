@@ -20,6 +20,8 @@ public interface IMpSuscripcionLogic
 
     Task<RespuestaResultado<MpSuscripcionDto>> ObtenerPorIdAsync(int mpSuscripcionId);
 
+    Task<RespuestaResultado<IEnumerable<EstadoSuscripcionDto>>> ObtenerEstadosAsync(IEnumerable<int> ids);
+
     Task<RespuestaResultado<ResultadoListaPaginada<MpSuscripcionDto>>> ListarAsync(
         int pagina, int tamanioPagina, string? estado = null, int? clienteId = null);
 

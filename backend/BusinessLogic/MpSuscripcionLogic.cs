@@ -236,6 +236,17 @@ public class MpSuscripcionLogic : BaseLogic<MpSuscripcionDto>, IMpSuscripcionLog
         return RespuestaExito(dto);
     }
 
+    public async Task<RespuestaResultado<IEnumerable<EstadoSuscripcionDto>>> ObtenerEstadosAsync(IEnumerable<int> ids)
+    {
+        var suscripciones = await _uow.MpSuscripcion.ObtenerPorIdsAsync(ids);
+        var estados = suscripciones.Select(s => new EstadoSuscripcionDto
+        {
+            MpSuscripcionId = s.MpSuscripcionId,
+            Estado = s.Estado,
+        });
+        return new RespuestaResultado<IEnumerable<EstadoSuscripcionDto>> { Exitoso = true, Contenido = estados };
+    }
+
     public async Task<RespuestaResultado<ResultadoListaPaginada<MpSuscripcionDto>>> ListarAsync(
         int pagina, int tamanioPagina, string? estado = null, int? clienteId = null)
     {
