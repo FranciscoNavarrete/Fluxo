@@ -28,6 +28,11 @@ public class UsuarioRepository : IUsuarioRepository
             "SELECT * FROM usuarios WHERE email = @Email AND activo = TRUE",
             new { Email = email });
 
+    public Task<Usuario?> ObtenerPorClienteIdAsync(int clienteId)
+        => _db.QueryFirstOrDefaultAsync<Usuario>(
+            "SELECT * FROM usuarios WHERE clienteid = @ClienteId",
+            new { ClienteId = clienteId });
+
     public async Task<bool> ExisteEmailAsync(string email)
         => await _db.ExecuteScalarAsync<int>(
             "SELECT COUNT(1) FROM Usuarios WHERE Email = @Email",

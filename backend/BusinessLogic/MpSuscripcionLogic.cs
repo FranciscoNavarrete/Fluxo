@@ -293,6 +293,25 @@ public class MpSuscripcionLogic : BaseLogic<MpSuscripcionDto>, IMpSuscripcionLog
         await _uow.MpSuscripcion.UpdateAsync(suscripcion);
         await RegistrarAuditoria("MpSuscripciones", suscripcion.MpSuscripcionId, "CANCEL", usuarioId, null);
 
+        // Libera el email del cliente: tanto Usuarios.Email como Clientes.Email tienen un índice
+        // único, así que sin esto el mismo email queda bloqueado para siempre y no se puede volver
+        // a dar de alta un cliente nuevo (ni desde el admin de GestorPOS ni el auto-registro).
+        var usuarioCliente = await _uow.Usuario.ObtenerPorClienteIdAsync(suscripcion.ClienteId);
+        if (usuarioCliente is not null)
+        {
+            usuarioCliente.Email = $"baja+{Guid.NewGuid():N}+{usuarioCliente.Email}";
+            await _uow.Usuario.UpdateAsync(usuarioCliente);
+            await RegistrarAuditoria("Usuarios", usuarioCliente.UsuarioId, "EMAIL_FREED", usuarioId, null);
+        }
+
+        var cliente = await _uow.Cliente.GetByIdAsync(suscripcion.ClienteId);
+        if (cliente is not null)
+        {
+            cliente.Email = $"baja+{Guid.NewGuid():N}+{cliente.Email}";
+            await _uow.Cliente.UpdateAsync(cliente);
+            await RegistrarAuditoria("Clientes", cliente.ClienteId, "EMAIL_FREED", usuarioId, null);
+        }
+
         return new RespuestaResultado<bool> { Exitoso = true, Mensaje = "Suscripción cancelada.", Contenido = true };
     }
 
