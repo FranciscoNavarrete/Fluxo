@@ -142,8 +142,8 @@ public class MpWebhookLogic : IMpWebhookLogic
             if (suscripcion is null)
             {
                 _logger.LogWarning(
-                    "Pago {PaymentId}: no se puede determinar la suscripción (external_reference={Ref}).",
-                    paymentId, mpPayment.ExternalReference);
+                    "Pago {PaymentId}: no se puede determinar la suscripción (external_reference={Ref}). Campos del pago: {Campos}",
+                    paymentId, mpPayment.ExternalReference, ResumenPagoParaDiagnostico(mpPayment));
                 return;
             }
         }
@@ -191,6 +191,33 @@ public class MpWebhookLogic : IMpWebhookLogic
 
         suscripcion.FechaHoraUltActualizacion = ahora;
         await _uow.MpSuscripcion.UpdateAsync(suscripcion);
+    }
+
+    // Solo campos que sirven para entender de dónde viene el pago; sin datos del pagador ni de la tarjeta.
+    private static string ResumenPagoParaDiagnostico(MercadoPago.Resource.Payment.Payment pago)
+    {
+        try
+        {
+            var contenido = pago.ApiResponse?.Content;
+            if (string.IsNullOrWhiteSpace(contenido)) return "(sin contenido)";
+
+            using var doc = System.Text.Json.JsonDocument.Parse(contenido);
+            var raiz = doc.RootElement;
+            var campos = new[]
+            {
+                "description", "operation_type", "payment_type_id", "payment_method_id", "status", "status_detail",
+                "transaction_amount", "currency_id", "order", "point_of_interaction", "metadata", "external_reference",
+                "application_id", "processing_mode", "merchant_account_id", "date_created",
+            };
+            var partes = campos
+                .Where(c => raiz.TryGetProperty(c, out _))
+                .Select(c => $"\"{c}\":{raiz.GetProperty(c).GetRawText()}");
+            return "{" + string.Join(",", partes) + "}";
+        }
+        catch (Exception ex)
+        {
+            return $"(no se pudo resumir: {ex.Message})";
+        }
     }
 
     private static readonly Regex ExternalReferenceSuscripcion =
