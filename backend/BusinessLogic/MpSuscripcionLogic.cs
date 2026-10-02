@@ -241,6 +241,7 @@ public class MpSuscripcionLogic : BaseLogic<MpSuscripcionDto>, IMpSuscripcionLog
         {
             MpSuscripcionId = s.MpSuscripcionId,
             Estado = s.Estado,
+            Confirmada = s.Estado == "authorized" || !string.IsNullOrEmpty(s.MpPayerId),
         });
         return new RespuestaResultado<IEnumerable<EstadoSuscripcionDto>> { Exitoso = true, Contenido = estados };
     }
