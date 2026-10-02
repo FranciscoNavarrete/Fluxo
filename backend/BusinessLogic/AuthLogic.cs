@@ -107,6 +107,18 @@ public class AuthLogic : IAuthLogic
         if (await _uow.Usuario.ExisteEmailAsync(email))
             return Error<CrearClienteAdminDto>("Ya existe una cuenta con ese email.");
 
+        // Con tarjeta el plan se valida ANTES de crear nada: si falla no queda un cliente a medias.
+        MpPlan? planTarjeta = null;
+        if (!string.IsNullOrWhiteSpace(request.CardTokenId))
+        {
+            if (!request.MpPlanId.HasValue)
+                return Error<CrearClienteAdminDto>("Para cobrar con tarjeta hay que elegir un plan.");
+
+            planTarjeta = await _uow.MpPlan.GetByIdAsync(request.MpPlanId.Value);
+            if (planTarjeta is null || !planTarjeta.Activo)
+                return Error<CrearClienteAdminDto>("El plan seleccionado no existe o no está activo.");
+        }
+
         // Contraseña temporal aleatoria
         string passwordTemporal = GenerarPasswordAleatorio();
 
@@ -142,6 +154,66 @@ public class AuthLogic : IAuthLogic
             Email            = email,
             PasswordTemporal = passwordTemporal,
         };
+
+        if (planTarjeta is not null)
+        {
+            var tarjeta = await MpPreapprovalConTarjeta.CrearAsync(
+                _config["MercadoPago:AccessToken"] ?? string.Empty,
+                new MpPreapprovalConTarjeta.Datos(
+                    Reason:            planTarjeta.Nombre,
+                    ExternalReference: $"client_{clienteId}_plan_{planTarjeta.MpPlanId}",
+                    PayerEmail:        email,
+                    CardTokenId:       request.CardTokenId!.Trim(),
+                    BackUrl:           _config["MercadoPago:BackUrl"] ?? string.Empty,
+                    Frequency:         planTarjeta.Frecuencia,
+                    FrequencyType:     planTarjeta.TipoFrecuencia,
+                    TransactionAmount: planTarjeta.Monto,
+                    CurrencyId:        planTarjeta.Moneda,
+                    StartDateUtc:      DateTime.UtcNow.AddDays(planTarjeta.DiasGratis > 0 ? planTarjeta.DiasGratis : 1),
+                    EndDateUtc:        DateTime.UtcNow.AddYears(10)));
+
+            if (!tarjeta.Exitoso)
+            {
+                _logger.LogWarning(
+                    "Mercado Pago rechazó la suscripción con tarjeta de clienteId={ClienteId} planId={PlanId}: {Error}",
+                    clienteId, planTarjeta.MpPlanId, tarjeta.Error);
+                await DarDeBajaClienteAMedias(cliente, clienteId, usuario, usuarioId);
+                return Error<CrearClienteAdminDto>(tarjeta.Error ?? "Mercado Pago rechazó la tarjeta.");
+            }
+
+            var ahoraTarjeta = DateTime.UtcNow;
+            var suscripcionTarjeta = new MpSuscripcion
+            {
+                ClienteId            = clienteId,
+                MpPlanId             = planTarjeta.MpPlanId,
+                GatewaySuscripcionId = tarjeta.Id!,
+                GatewayProveedor     = "MercadoPago",
+                MpPayerId            = tarjeta.PayerId,
+                MpPayerEmail         = email,
+                Estado               = tarjeta.Estado ?? "authorized",
+                FechaInicio          = ahoraTarjeta,
+                DiaCobro             = request.DiaCobro,
+                ProximoCobro         = FechaCobroHelper.PrimerCobro(
+                    ahoraTarjeta, planTarjeta.Frecuencia, planTarjeta.TipoFrecuencia,
+                    request.DiaCobro, planTarjeta.DiasGratis),
+                IntentosReintento    = 0,
+                MaxReintentos        = 3,
+                ConsentimientoFecha  = ahoraTarjeta,
+                ConsentimientoIp     = "admin",
+                TerminosVersion      = "1.0",
+                UsuarioCreacionId    = usuarioAdminId,
+                FechaHoraCreacion    = ahoraTarjeta,
+            };
+            resultado.MpSuscripcionId   = await _uow.MpSuscripcion.InsertAsync(suscripcionTarjeta);
+            resultado.EstadoSuscripcion = suscripcionTarjeta.Estado;
+
+            return new RespuestaResultado<CrearClienteAdminDto>
+            {
+                Exitoso   = true,
+                Mensaje   = "Cliente creado correctamente.",
+                Contenido = resultado,
+            };
+        }
 
         // Crear suscripción si se pidió un plan
         if (request.MpPlanId.HasValue)
@@ -197,8 +269,9 @@ public class AuthLogic : IAuthLogic
                             FechaHoraCreacion        = ahora,
                         };
                         int suscripcionId = await _uow.MpSuscripcion.InsertAsync(suscripcion);
-                        resultado.MpSuscripcionId = suscripcionId;
-                        resultado.InitPoint       = mpResponse.InitPoint;
+                        resultado.MpSuscripcionId   = suscripcionId;
+                        resultado.InitPoint         = mpResponse.InitPoint;
+                        resultado.EstadoSuscripcion = "pending";
                     }
                 }
                 catch (Exception ex)
@@ -216,6 +289,30 @@ public class AuthLogic : IAuthLogic
             Mensaje  = "Cliente creado correctamente.",
             Contenido = resultado,
         };
+    }
+
+    // Si Mercado Pago rechaza la tarjeta, el cliente/usuario recién creados quedan inactivos y con el
+    // email liberado (mismo mecanismo que al cancelar una suscripción) para poder reintentar el alta.
+    private async Task DarDeBajaClienteAMedias(Cliente cliente, int clienteId, Usuario usuario, int usuarioId)
+    {
+        try
+        {
+            string prefijo = $"baja+{Guid.NewGuid():N}+";
+
+            usuario.UsuarioId = usuarioId;
+            usuario.Activo    = false;
+            usuario.Email     = prefijo + usuario.Email;
+            await _uow.Usuario.UpdateAsync(usuario);
+
+            cliente.ClienteId = clienteId;
+            cliente.Activo    = false;
+            cliente.Email     = prefijo + cliente.Email;
+            await _uow.Cliente.UpdateAsync(cliente);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "No se pudo dar de baja el cliente a medias clienteId={ClienteId}", clienteId);
+        }
     }
 
     // ── Cambiar contraseña (primer login con contraseña temporal) ──────────

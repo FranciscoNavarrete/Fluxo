@@ -8,4 +8,5 @@ public class CrearClienteAdminDto
     public string PasswordTemporal { get; set; } = string.Empty;   // mostrar UNA vez al admin
     public string? InitPoint { get; set; }                          // link de MP si se creó suscripción
     public int? MpSuscripcionId { get; set; }
+    public string? EstadoSuscripcion { get; set; }                  // pending (link) o authorized (tarjeta)
 }
