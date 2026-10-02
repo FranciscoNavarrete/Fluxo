@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -24,6 +24,7 @@ import {
   MpSuscripcion,
 } from '../../../shared/models';
 import { MonedaArgPipe } from '../../../shared/pipes/moneda-arg.pipe';
+import { RefrescoAutomatico } from '../../../shared/utils/refresco-automatico';
 
 @Component({
   selector: 'app-suscripciones-tabla',
@@ -65,6 +66,11 @@ import { MonedaArgPipe } from '../../../shared/pipes/moneda-arg.pipe';
         <div>
           <h1 class="text-2xl font-semibold text-gray-800 dark:text-gray-100">Suscripciones</h1>
           <p class="text-sm text-gray-400 mt-0.5">{{ totalItems() }} registros</p>
+          <p *ngIf="refresco.activo()" class="text-xs text-gray-400 mt-0.5">Se actualiza solo mientras haya pagos pendientes.</p>
+          <button *ngIf="refresco.expirado()" mat-stroked-button class="mt-1" (click)="actualizarAhora()">
+            <mat-icon>refresh</mat-icon>
+            Actualizar
+          </button>
         </div>
         <button mat-flat-button color="primary" (click)="mostrarModal = true; cargarPlanes()">
           <mat-icon>add</mat-icon>
@@ -276,7 +282,7 @@ import { MonedaArgPipe } from '../../../shared/pipes/moneda-arg.pipe';
     </div>
   `,
 })
-export class SuscripcionesTablaComponent implements OnInit {
+export class SuscripcionesTablaComponent implements OnInit, OnDestroy {
   private readonly suscSvc  = inject(SuscripcionService);
   private readonly router   = inject(Router);
   private readonly snackBar = inject(MatSnackBar);
@@ -287,6 +293,7 @@ export class SuscripcionesTablaComponent implements OnInit {
   readonly suscripciones      = signal<MpSuscripcion[]>([]);
   readonly totalItems         = signal(0);
   readonly clientesCubiertos  = signal<Set<number>>(new Set());
+  readonly refresco           = new RefrescoAutomatico(() => this.cargar(true));
 
   pageSize     = 20;
   paginaActual = 0;
@@ -309,6 +316,13 @@ export class SuscripcionesTablaComponent implements OnInit {
   });
 
   ngOnInit(): void { this.cargar(); }
+
+  ngOnDestroy(): void { this.refresco.destruir(); }
+
+  actualizarAhora(): void {
+    this.refresco.reanudar();
+    this.cargar();
+  }
 
   cargarPlanes(): void {
     if (this.planes.length) return;
@@ -378,17 +392,20 @@ export class SuscripcionesTablaComponent implements OnInit {
     this.router.navigate(['/admin/suscripciones', row.mpSuscripcionId]);
   }
 
-  private cargar(): void {
-    this.cargando.set(true);
+  private cargar(silencioso = false): void {
+    if (!silencioso) this.cargando.set(true);
     this.suscSvc.getSuscripciones(this.filtros).subscribe({
       next: res => {
         this.suscripciones.set(res.items);
         this.totalItems.set(res.totalItems);
         this.cargando.set(false);
         this.cargarCobertura(res.items);
+        this.refresco.evaluar(res.items.some(s => s.estado === 'pending'));
       },
       error: err => {
-        this.snackBar.open(err.message, 'OK', { duration: 5000, panelClass: 'snack-error' });
+        if (!silencioso) {
+          this.snackBar.open(err.message, 'OK', { duration: 5000, panelClass: 'snack-error' });
+        }
         this.cargando.set(false);
       },
     });
