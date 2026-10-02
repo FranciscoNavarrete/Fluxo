@@ -247,6 +247,30 @@ public class MpSuscripcionLogic : BaseLogic<MpSuscripcionDto>, IMpSuscripcionLog
         return new RespuestaResultado<IEnumerable<EstadoSuscripcionDto>> { Exitoso = true, Contenido = estados };
     }
 
+    public async Task<RespuestaResultado<LinkPagoSuscripcionDto>> ObtenerLinkPagoAsync(int mpSuscripcionId)
+    {
+        var suscripcion = await _uow.MpSuscripcion.GetByIdAsync(mpSuscripcionId);
+        if (suscripcion is null)
+        {
+            return new RespuestaResultado<LinkPagoSuscripcionDto>
+            {
+                Exitoso = false,
+                Mensaje = "Suscripción no encontrada.",
+            };
+        }
+
+        return new RespuestaResultado<LinkPagoSuscripcionDto>
+        {
+            Exitoso = true,
+            Contenido = new LinkPagoSuscripcionDto
+            {
+                MpSuscripcionId = suscripcion.MpSuscripcionId,
+                Estado          = suscripcion.Estado,
+                InitPoint       = suscripcion.Estado == "pending" ? suscripcion.InitPoint : null,
+            },
+        };
+    }
+
     public async Task<RespuestaResultado<ResultadoListaPaginada<MpSuscripcionDto>>> ListarAsync(
         int pagina, int tamanioPagina, string? estado = null, int? clienteId = null)
     {

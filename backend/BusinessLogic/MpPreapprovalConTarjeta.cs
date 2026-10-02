@@ -35,7 +35,7 @@ internal static class MpPreapprovalConTarjeta
         DateTime StartDateUtc,
         DateTime EndDateUtc);
 
-    internal record Resultado(bool Exitoso, string? Id, string? Estado, string? PayerId, string? Error);
+    internal record Resultado(bool Exitoso, string? Id, string? Estado, string? PayerId, string? Error, string? ErrorOriginal = null);
 
     internal static async Task<Resultado> CrearAsync(string accessToken, Datos datos)
     {
@@ -73,7 +73,10 @@ internal static class MpPreapprovalConTarjeta
             var raiz = doc.RootElement;
 
             if (!response.IsSuccessStatusCode)
-                return new Resultado(false, null, null, null, ExtraerError(raiz, response.StatusCode));
+            {
+                var (amigable, original) = ExtraerError(raiz, response.StatusCode);
+                return new Resultado(false, null, null, null, amigable, original);
+            }
 
             string? id = raiz.TryGetProperty("id", out var idEl) ? idEl.GetString() : null;
             if (string.IsNullOrEmpty(id))
@@ -95,10 +98,13 @@ internal static class MpPreapprovalConTarjeta
     private static string FormatearFecha(DateTime utc)
         => utc.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'");
 
-    private static string ExtraerError(JsonElement raiz, System.Net.HttpStatusCode status)
+    private static (string Amigable, string? Original) ExtraerError(JsonElement raiz, System.Net.HttpStatusCode status)
     {
         if (raiz.ValueKind == JsonValueKind.Object && raiz.TryGetProperty("message", out var m) && m.ValueKind == JsonValueKind.String)
-            return m.GetString()!;
-        return $"Mercado Pago rechazó la suscripción (HTTP {(int)status}).";
+        {
+            var original = m.GetString();
+            return (MpErrores.Traducir(original), original);
+        }
+        return ($"Mercado Pago rechazó la suscripción (HTTP {(int)status}).", null);
     }
 }

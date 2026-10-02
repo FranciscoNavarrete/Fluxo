@@ -22,6 +22,9 @@ public interface IMpSuscripcionLogic
 
     Task<RespuestaResultado<IEnumerable<EstadoSuscripcionDto>>> ObtenerEstadosAsync(IEnumerable<int> ids);
 
+    /// <summary>Link de pago de una suscripción que sigue pendiente (para volver a mostrarlo/compartirlo).</summary>
+    Task<RespuestaResultado<LinkPagoSuscripcionDto>> ObtenerLinkPagoAsync(int mpSuscripcionId);
+
     Task<RespuestaResultado<ResultadoListaPaginada<MpSuscripcionDto>>> ListarAsync(
         int pagina, int tamanioPagina, string? estado = null, int? clienteId = null);
 

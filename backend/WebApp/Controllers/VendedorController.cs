@@ -45,6 +45,14 @@ public class VendedorController : BaseApiController
         return Ok(resultado);
     }
 
+    /// <summary>Link de pago de una suscripción pendiente, para que GestorPOS lo pueda volver a mostrar.</summary>
+    [HttpGet("suscripciones/{mpSuscripcionId:int}/link")]
+    public async Task<IActionResult> ObtenerLinkPago(int mpSuscripcionId)
+    {
+        var resultado = await _suscripcionLogic.ObtenerLinkPagoAsync(mpSuscripcionId);
+        return resultado.Exitoso ? Ok(resultado) : NotFound(resultado);
+    }
+
     /// <summary>
     /// Estado (pending/authorized/paused/...) de un lote de suscripciones, para que GestorPOS
     /// pinte "Pendiente"/"Suscripto" en su listado de negocios sin pegarle a Fluxo una vez por

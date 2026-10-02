@@ -176,7 +176,7 @@ public class AuthLogic : IAuthLogic
             {
                 _logger.LogWarning(
                     "Mercado Pago rechazó la suscripción con tarjeta de clienteId={ClienteId} planId={PlanId}: {Error}",
-                    clienteId, planTarjeta.MpPlanId, tarjeta.Error);
+                    clienteId, planTarjeta.MpPlanId, tarjeta.ErrorOriginal ?? tarjeta.Error);
                 await DarDeBajaClienteAMedias(cliente, clienteId, usuario, usuarioId);
                 return Error<CrearClienteAdminDto>(tarjeta.Error ?? "Mercado Pago rechazó la tarjeta.");
             }
@@ -288,7 +288,7 @@ public class AuthLogic : IAuthLogic
                     // Panel admin de Fluxo: el cliente queda creado y se arma la suscripción por separado.
                     // Alta desde GestorPOS (exigirSuscripcion): se revierte más abajo.
                     _logger.LogError(ex, "Falló la creación de la suscripción MP para clienteId={ClienteId} planId={PlanId}", clienteId, plan.MpPlanId);
-                    falloSuscripcion = ex.Message;
+                    falloSuscripcion = MpErrores.Traducir(ex.Message);
                 }
             }
         }
