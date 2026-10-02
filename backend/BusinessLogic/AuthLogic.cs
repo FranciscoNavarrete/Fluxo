@@ -97,7 +97,7 @@ public class AuthLogic : IAuthLogic
 
     // ── Crear cliente desde el admin (Opción C) ────────────────────────────
     public async Task<RespuestaResultado<CrearClienteAdminDto>> CrearClienteAdminAsync(
-        CrearClienteAdminRequest request, int usuarioAdminId)
+        CrearClienteAdminRequest request, int usuarioAdminId, bool exigirSuscripcion = false)
     {
         if (string.IsNullOrWhiteSpace(request.Email))
             return Error<CrearClienteAdminDto>("El email es obligatorio.");
@@ -216,10 +216,15 @@ public class AuthLogic : IAuthLogic
         }
 
         // Crear suscripción si se pidió un plan
+        string? falloSuscripcion = null;
         if (request.MpPlanId.HasValue)
         {
             var plan = await _uow.MpPlan.GetByIdAsync(request.MpPlanId.Value);
-            if (plan is not null && plan.Activo)
+            if (plan is null || !plan.Activo)
+            {
+                falloSuscripcion = "El plan seleccionado no existe o no está activo.";
+            }
+            else
             {
                 try
                 {
@@ -273,14 +278,25 @@ public class AuthLogic : IAuthLogic
                         resultado.InitPoint         = mpResponse.InitPoint;
                         resultado.EstadoSuscripcion = "pending";
                     }
+                    else
+                    {
+                        falloSuscripcion = "Mercado Pago no devolvió el id de la suscripción.";
+                    }
                 }
                 catch (Exception ex)
                 {
-                    // La suscripción falló pero el cliente ya fue creado — no revertimos
-                    // El admin puede crear la suscripción por separado
+                    // Panel admin de Fluxo: el cliente queda creado y se arma la suscripción por separado.
+                    // Alta desde GestorPOS (exigirSuscripcion): se revierte más abajo.
                     _logger.LogError(ex, "Falló la creación de la suscripción MP para clienteId={ClienteId} planId={PlanId}", clienteId, plan.MpPlanId);
+                    falloSuscripcion = ex.Message;
                 }
             }
+        }
+
+        if (exigirSuscripcion && falloSuscripcion is not null)
+        {
+            await DarDeBajaClienteAMedias(cliente, clienteId, usuario, usuarioId);
+            return Error<CrearClienteAdminDto>(falloSuscripcion);
         }
 
         return new RespuestaResultado<CrearClienteAdminDto>

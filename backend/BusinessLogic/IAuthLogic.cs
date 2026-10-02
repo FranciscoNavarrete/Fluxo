@@ -9,7 +9,11 @@ public interface IAuthLogic
 {
     Task<RespuestaResultado<LoginDto>>            LoginAsync(LoginRequest request);
     Task<RespuestaResultado<LoginDto>>            RegistroAsync(RegistroRequest request);
-    Task<RespuestaResultado<CrearClienteAdminDto>> CrearClienteAdminAsync(CrearClienteAdminRequest request, int usuarioAdminId);
+    /// <summary>Con <paramref name="exigirSuscripcion"/> (alta desde GestorPOS), si se pidió un plan y la suscripción
+    /// no se puede crear, el cliente recién creado se da de baja (email liberado) y se devuelve error, en vez
+    /// de dejar un cliente sin suscripción. El panel admin de Fluxo lo deja en false a propósito.</summary>
+    Task<RespuestaResultado<CrearClienteAdminDto>> CrearClienteAdminAsync(
+        CrearClienteAdminRequest request, int usuarioAdminId, bool exigirSuscripcion = false);
     Task<RespuestaResultado<LoginDto>>            CambiarPasswordAsync(int usuarioId, string nuevaPassword);
     Task<RespuestaResultado<PerfilDto>>           ObtenerPerfilAsync(int clienteId);
     Task<RespuestaResultado<PerfilDto>>           ActualizarPerfilAsync(int clienteId, ActualizarPerfilRequest request);

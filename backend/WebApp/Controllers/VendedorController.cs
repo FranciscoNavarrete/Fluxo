@@ -33,7 +33,7 @@ public class VendedorController : BaseApiController
     public async Task<IActionResult> IniciarSuscripcion([FromBody] CrearClienteAdminRequest request)
     {
         var usuarioSistemaId = await _authLogic.ObtenerOCrearUsuarioSistemaIdAsync();
-        var resultado = await _authLogic.CrearClienteAdminAsync(request, usuarioSistemaId);
+        var resultado = await _authLogic.CrearClienteAdminAsync(request, usuarioSistemaId, exigirSuscripcion: true);
         return resultado.Exitoso ? Ok(resultado) : BadRequest(resultado);
     }
 
