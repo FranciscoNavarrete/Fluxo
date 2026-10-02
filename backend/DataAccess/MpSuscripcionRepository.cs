@@ -84,6 +84,18 @@ public class MpSuscripcionRepository : IMpSuscripcionRepository
         return await _db.QueryFirstOrDefaultAsync<MpSuscripcion>(sql, new { GatewaySuscripcionId = gatewaySuscripcionId });
     }
 
+    public async Task<IEnumerable<MpSuscripcion>> ObtenerPendientesParaSincronizarAsync(DateTime creadasDesdeUtc, int maximo)
+    {
+        const string sql = """
+            SELECT * FROM MpSuscripciones
+            WHERE Estado = 'pending'
+              AND FechaHoraCreacion >= @Desde
+            ORDER BY FechaHoraCreacion DESC
+            LIMIT @Maximo
+            """;
+        return await _db.QueryAsync<MpSuscripcion>(sql, new { Desde = creadasDesdeUtc, Maximo = maximo });
+    }
+
     public async Task<MpSuscripcion?> ObtenerActivaPorClienteAsync(int clienteId)
     {
         const string sql = """

@@ -42,6 +42,7 @@ public static class MercadoPagoExtensions
         // Ejemplo: services.AddScoped<IDunningNotificador, SendGridDunningNotificador>();
         services.AddSingleton<DunningBackgroundService>();
         services.AddHostedService(sp => sp.GetRequiredService<DunningBackgroundService>());
+        services.AddHostedService<SincronizacionSuscripcionesBackgroundService>();
 
         return services;
     }

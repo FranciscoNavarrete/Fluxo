@@ -13,4 +13,5 @@ public interface IMpSuscripcionRepository : IRepository<MpSuscripcion>
     Task<ResultadoListaPaginada<MpSuscripcionDto>> ListarPaginadoAsync(
         int pagina, int tamanioPagina, string? estado = null, int? clienteId = null);
     Task<IEnumerable<MpSuscripcion>> ObtenerVencidasParaDunningAsync();
+    Task<IEnumerable<MpSuscripcion>> ObtenerPendientesParaSincronizarAsync(DateTime creadasDesdeUtc, int maximo);
 }

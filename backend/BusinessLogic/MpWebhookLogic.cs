@@ -83,6 +83,18 @@ public class MpWebhookLogic : IMpWebhookLogic
         }
     }
 
+    public async Task SincronizarSuscripcionAsync(string gatewaySuscripcionId)
+    {
+        try
+        {
+            await ProcesarCambioEstadoSuscripcionAsync(gatewaySuscripcionId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "No se pudo sincronizar la suscripción {GatewayId} con Mercado Pago.", gatewaySuscripcionId);
+        }
+    }
+
     private async Task ProcesarPagoAsync(string paymentId)
     {
         MercadoPagoConfig.AccessToken = _config["MercadoPago:AccessToken"];
