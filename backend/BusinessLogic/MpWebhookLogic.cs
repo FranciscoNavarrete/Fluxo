@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using System.Text;
 using MercadoPago.Client.Payment;
 using MercadoPago.Client.Preapproval;
@@ -123,17 +124,28 @@ public class MpWebhookLogic : IMpWebhookLogic
                 : null;
         }
 
-        if (string.IsNullOrEmpty(preApprovalId))
+        MpSuscripcion? suscripcion;
+        if (!string.IsNullOrEmpty(preApprovalId))
         {
-            _logger.LogWarning("Pago {PaymentId}: no se puede determinar el pre_approval_id.", paymentId);
-            return;
+            suscripcion = await _uow.MpSuscripcion.ObtenerPorGatewayIdAsync(preApprovalId);
+            if (suscripcion is null)
+            {
+                _logger.LogWarning("Suscripción con GatewayId={PreApprovalId} no encontrada.", preApprovalId);
+                return;
+            }
         }
-
-        var suscripcion = await _uow.MpSuscripcion.ObtenerPorGatewayIdAsync(preApprovalId);
-        if (suscripcion is null)
+        else
         {
-            _logger.LogWarning("Suscripción con GatewayId={PreApprovalId} no encontrada.", preApprovalId);
-            return;
+            // Mercado Pago no siempre informa la suscripción dentro del pago. Se resuelve por el
+            // external_reference que le pusimos al crearla, validando contra el pagador.
+            suscripcion = await ObtenerPorExternalReferenceAsync(mpPayment.ExternalReference, mpPayment.Payer?.Email);
+            if (suscripcion is null)
+            {
+                _logger.LogWarning(
+                    "Pago {PaymentId}: no se puede determinar la suscripción (external_reference={Ref}).",
+                    paymentId, mpPayment.ExternalReference);
+                return;
+            }
         }
 
         int intentos = await _uow.MpTransaccion.ContarIntentosPorSuscripcionAsync(suscripcion.MpSuscripcionId);
@@ -179,6 +191,32 @@ public class MpWebhookLogic : IMpWebhookLogic
 
         suscripcion.FechaHoraUltActualizacion = ahora;
         await _uow.MpSuscripcion.UpdateAsync(suscripcion);
+    }
+
+    private static readonly Regex ExternalReferenceSuscripcion =
+        new(@"^client_(\d+)_plan_(\d+)$", RegexOptions.Compiled);
+
+    // QAS y PROD comparten la cuenta de Mercado Pago (y el webhook llega solo a PROD), y los ids de
+    // cliente/plan se repiten entre las dos bases: por eso, además del external_reference, el email
+    // del pagador tiene que coincidir con el del cliente. Si no, el pago es de otro ambiente.
+    private async Task<MpSuscripcion?> ObtenerPorExternalReferenceAsync(string? externalReference, string? emailPagador)
+    {
+        if (string.IsNullOrEmpty(externalReference) || string.IsNullOrWhiteSpace(emailPagador))
+            return null;
+
+        var match = ExternalReferenceSuscripcion.Match(externalReference);
+        if (!match.Success)
+            return null;
+
+        int clienteId = int.Parse(match.Groups[1].Value);
+        int planId    = int.Parse(match.Groups[2].Value);
+
+        var cliente = await _uow.Cliente.GetByIdAsync(clienteId);
+        if (cliente is null || !string.Equals(cliente.Email, emailPagador.Trim(), StringComparison.OrdinalIgnoreCase))
+            return null;
+
+        var suscripcion = await _uow.MpSuscripcion.ObtenerActivaPorClienteAsync(clienteId);
+        return suscripcion is not null && suscripcion.MpPlanId == planId ? suscripcion : null;
     }
 
     private async Task ProcesarPagoUnicoAsync(
