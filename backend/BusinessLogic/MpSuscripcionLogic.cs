@@ -72,7 +72,7 @@ public class MpSuscripcionLogic : BaseLogic<MpSuscripcionDto>, IMpSuscripcionLog
                 FrequencyType = plan.TipoFrecuencia,
                 TransactionAmount = plan.Monto,
                 CurrencyId = plan.Moneda,
-                StartDate = DateTime.UtcNow.AddDays(plan.DiasGratis > 0 ? plan.DiasGratis : 1),
+                StartDate = FechaCobroHelper.PrimerCobro(DateTime.UtcNow, plan.DiasGratis),
                 EndDate = DateTime.UtcNow.AddYears(10)
             },
             Status = "pending"
@@ -109,8 +109,7 @@ public class MpSuscripcionLogic : BaseLogic<MpSuscripcionDto>, IMpSuscripcionLog
             Estado = "pending",
             FechaInicio = ahora,
             DiaCobro = request.DiaCobro,
-            ProximoCobro = FechaCobroHelper.PrimerCobro(
-                ahora, plan.Frecuencia, plan.TipoFrecuencia, request.DiaCobro, plan.DiasGratis),
+            ProximoCobro = FechaCobroHelper.PrimerCobro(ahora, plan.DiasGratis),
             IntentosReintento = 0,
             MaxReintentos = 3,
             InitPoint = mpResponse.InitPoint,
@@ -187,7 +186,7 @@ public class MpSuscripcionLogic : BaseLogic<MpSuscripcionDto>, IMpSuscripcionLog
                 FrequencyType = plan.TipoFrecuencia,
                 TransactionAmount = plan.Monto,
                 CurrencyId = plan.Moneda,
-                StartDate = DateTime.UtcNow.AddDays(plan.DiasGratis),
+                StartDate = FechaCobroHelper.PrimerCobro(DateTime.UtcNow, plan.DiasGratis),
                 EndDate = DateTime.UtcNow.AddYears(10)
             },
             Status = "authorized"
@@ -209,8 +208,7 @@ public class MpSuscripcionLogic : BaseLogic<MpSuscripcionDto>, IMpSuscripcionLog
             Estado = "authorized",
             FechaInicio = ahora,
             DiaCobro = request.DiaCobro,
-            ProximoCobro = FechaCobroHelper.PrimerCobro(
-                ahora, plan.Frecuencia, plan.TipoFrecuencia, request.DiaCobro, plan.DiasGratis),
+            ProximoCobro = FechaCobroHelper.PrimerCobro(ahora, plan.DiasGratis),
             IntentosReintento = 0,
             MaxReintentos = 3,
             ConsentimientoFecha = ahora,

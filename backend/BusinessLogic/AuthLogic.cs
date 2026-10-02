@@ -169,7 +169,7 @@ public class AuthLogic : IAuthLogic
                     FrequencyType:     planTarjeta.TipoFrecuencia,
                     TransactionAmount: planTarjeta.Monto,
                     CurrencyId:        planTarjeta.Moneda,
-                    StartDateUtc:      DateTime.UtcNow.AddDays(planTarjeta.DiasGratis > 0 ? planTarjeta.DiasGratis : 1),
+                    StartDateUtc:      FechaCobroHelper.PrimerCobro(DateTime.UtcNow, planTarjeta.DiasGratis),
                     EndDateUtc:        DateTime.UtcNow.AddYears(10)));
 
             if (!tarjeta.Exitoso)
@@ -193,9 +193,7 @@ public class AuthLogic : IAuthLogic
                 Estado               = tarjeta.Estado ?? "authorized",
                 FechaInicio          = ahoraTarjeta,
                 DiaCobro             = request.DiaCobro,
-                ProximoCobro         = FechaCobroHelper.PrimerCobro(
-                    ahoraTarjeta, planTarjeta.Frecuencia, planTarjeta.TipoFrecuencia,
-                    request.DiaCobro, planTarjeta.DiasGratis),
+                ProximoCobro         = FechaCobroHelper.PrimerCobro(ahoraTarjeta, planTarjeta.DiasGratis),
                 IntentosReintento    = 0,
                 MaxReintentos        = 3,
                 ConsentimientoFecha  = ahoraTarjeta,
@@ -241,7 +239,7 @@ public class AuthLogic : IAuthLogic
                             FrequencyType     = plan.TipoFrecuencia,
                             TransactionAmount = plan.Monto,
                             CurrencyId        = plan.Moneda,
-                            StartDate         = DateTime.UtcNow.AddDays(plan.DiasGratis > 0 ? plan.DiasGratis : 1),
+                            StartDate         = FechaCobroHelper.PrimerCobro(DateTime.UtcNow, plan.DiasGratis),
                             EndDate           = DateTime.UtcNow.AddYears(10),
                         },
                         Status = "pending",
@@ -261,9 +259,7 @@ public class AuthLogic : IAuthLogic
                             Estado                   = "pending",
                             FechaInicio              = ahora,
                             DiaCobro                 = request.DiaCobro,
-                            ProximoCobro             = FechaCobroHelper.PrimerCobro(
-                                ahora, plan.Frecuencia, plan.TipoFrecuencia,
-                                request.DiaCobro, plan.DiasGratis),
+                            ProximoCobro             = FechaCobroHelper.PrimerCobro(ahora, plan.DiasGratis),
                             IntentosReintento        = 0,
                             MaxReintentos            = 3,
                             InitPoint                = mpResponse.InitPoint,

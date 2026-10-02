@@ -30,32 +30,13 @@ public static class FechaCobroHelper
     }
 
     /// <summary>
-    /// Calcula el primer cobro desde hoy, buscando la próxima ocurrencia del DiaCobro.
-    /// Si el día ya pasó este mes, avanza al mes siguiente.
+    /// Fecha del primer cobro de una suscripción nueva. Es la misma fecha de inicio que se le manda a
+    /// Mercado Pago (start_date): como MP exige una fecha futura, sin días gratis el primer cobro es
+    /// 24 horas después de autorizar; con días gratis, esa cantidad de días después. El día de cobro
+    /// preferido (DiaCobro) no interviene: MP cobra siempre desde start_date.
     /// </summary>
-    public static DateTime PrimerCobro(
-        DateTime desde,
-        int frecuencia,
-        string tipoFrecuencia,
-        byte? diaCobro,
-        int diasGratis)
-    {
-        // Si hay días gratis, el primer cobro es después del periodo de gracia
-        if (diasGratis > 0)
-        {
-            var trasPeriodoGratis = desde.AddDays(diasGratis);
-            return diaCobro.HasValue
-                ? AjustarAlProximoDia(trasPeriodoGratis, diaCobro.Value)
-                : trasPeriodoGratis;
-        }
-
-        if (!diaCobro.HasValue || diaCobro.Value < 1 || diaCobro.Value > 31)
-            return tipoFrecuencia == "months"
-                ? desde.AddMonths(frecuencia)
-                : desde.AddDays(frecuencia);
-
-        return AjustarAlProximoDia(desde, diaCobro.Value);
-    }
+    public static DateTime PrimerCobro(DateTime desde, int diasGratis)
+        => desde.AddDays(diasGratis > 0 ? diasGratis : 1);
 
     // ── Privados ─────────────────────────────────────────────────────────────
 
