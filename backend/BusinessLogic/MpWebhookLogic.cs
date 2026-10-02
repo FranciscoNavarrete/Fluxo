@@ -111,9 +111,17 @@ public class MpWebhookLogic : IMpWebhookLogic
             return;
         }
 
-        string? preApprovalId = mpPayment.Metadata?.TryGetValue("preapproval_id", out var pid) == true
-            ? pid?.ToString()
-            : null;
+        // MP no manda el preapproval_id en Metadata para pagos generados por una suscripción
+        // recurrente — viene en point_of_interaction.transaction_data.subscription_id. Metadata
+        // queda como fallback por si algún día se crea un pago con esa clave seteada a mano.
+        string? preApprovalId = mpPayment.PointOfInteraction?.TransactionData?.SubscriptionId;
+
+        if (string.IsNullOrEmpty(preApprovalId))
+        {
+            preApprovalId = mpPayment.Metadata?.TryGetValue("preapproval_id", out var pid) == true
+                ? pid?.ToString()
+                : null;
+        }
 
         if (string.IsNullOrEmpty(preApprovalId))
         {
