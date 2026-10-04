@@ -73,7 +73,8 @@ public class MpSuscripcionLogic : BaseLogic<MpSuscripcionDto>, IMpSuscripcionLog
                 TransactionAmount = plan.Monto,
                 CurrencyId = plan.Moneda,
                 StartDate = FechaCobroHelper.PrimerCobro(DateTime.UtcNow, plan.DiasGratis),
-                EndDate = DateTime.UtcNow.AddYears(10)
+                Repetitions = plan.Repeticiones,
+                EndDate = plan.Repeticiones.HasValue ? null : DateTime.UtcNow.AddYears(10)
             },
             Status = "pending"
         };
@@ -187,7 +188,8 @@ public class MpSuscripcionLogic : BaseLogic<MpSuscripcionDto>, IMpSuscripcionLog
                 TransactionAmount = plan.Monto,
                 CurrencyId = plan.Moneda,
                 StartDate = FechaCobroHelper.PrimerCobro(DateTime.UtcNow, plan.DiasGratis),
-                EndDate = DateTime.UtcNow.AddYears(10)
+                Repetitions = plan.Repeticiones,
+                EndDate = plan.Repeticiones.HasValue ? null : DateTime.UtcNow.AddYears(10)
             },
             Status = "authorized"
         };

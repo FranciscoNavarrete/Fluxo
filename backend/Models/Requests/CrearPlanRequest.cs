@@ -9,4 +9,5 @@ public class CrearPlanRequest
     public string TipoFrecuencia { get; set; } = string.Empty;
     public int Frecuencia { get; set; }
     public int DiasGratis { get; set; }
+    public int? Repeticiones { get; set; }
 }

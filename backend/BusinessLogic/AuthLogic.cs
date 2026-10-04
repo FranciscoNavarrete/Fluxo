@@ -170,7 +170,8 @@ public class AuthLogic : IAuthLogic
                     TransactionAmount: planTarjeta.Monto,
                     CurrencyId:        planTarjeta.Moneda,
                     StartDateUtc:      FechaCobroHelper.PrimerCobro(DateTime.UtcNow, planTarjeta.DiasGratis),
-                    EndDateUtc:        DateTime.UtcNow.AddYears(10)));
+                    EndDateUtc:        planTarjeta.Repeticiones.HasValue ? null : DateTime.UtcNow.AddYears(10),
+                    Repeticiones:      planTarjeta.Repeticiones));
 
             if (!tarjeta.Exitoso)
             {
@@ -240,7 +241,8 @@ public class AuthLogic : IAuthLogic
                             TransactionAmount = plan.Monto,
                             CurrencyId        = plan.Moneda,
                             StartDate         = FechaCobroHelper.PrimerCobro(DateTime.UtcNow, plan.DiasGratis),
-                            EndDate           = DateTime.UtcNow.AddYears(10),
+                            Repetitions       = plan.Repeticiones,
+                            EndDate           = plan.Repeticiones.HasValue ? null : DateTime.UtcNow.AddYears(10),
                         },
                         Status = "pending",
                     };

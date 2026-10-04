@@ -10,6 +10,7 @@ public class MpPlanDto
     public string TipoFrecuencia { get; set; } = string.Empty;
     public int Frecuencia { get; set; }
     public int DiasGratis { get; set; }
+    public int? Repeticiones { get; set; }
     public string? MpPlanExternoId { get; set; }
     public bool Activo { get; set; }
     public DateTime FechaHoraCreacion { get; set; }

@@ -41,6 +41,7 @@ public class MpPlanLogic : BaseLogic<MpPlanDto>, IMpPlanLogic
             TipoFrecuencia = request.TipoFrecuencia.ToLower(),
             Frecuencia = request.Frecuencia,
             DiasGratis = request.DiasGratis,
+            Repeticiones = request.Repeticiones,
             MpPlanExternoId = null,
             Activo = true,
             UsuarioCreacionId = usuarioId,
@@ -68,6 +69,7 @@ public class MpPlanLogic : BaseLogic<MpPlanDto>, IMpPlanLogic
         plan.TipoFrecuencia = request.TipoFrecuencia.ToLower();
         plan.Frecuencia = request.Frecuencia;
         plan.DiasGratis = request.DiasGratis;
+        plan.Repeticiones = request.Repeticiones;
         plan.Activo = request.Activo;
         plan.UsuarioUltActualizacionId = usuarioId;
         plan.FechaHoraUltActualizacion = DateTime.UtcNow;
@@ -119,6 +121,7 @@ public class MpPlanLogic : BaseLogic<MpPlanDto>, IMpPlanLogic
         TipoFrecuencia = p.TipoFrecuencia,
         Frecuencia = p.Frecuencia,
         DiasGratis = p.DiasGratis,
+        Repeticiones = p.Repeticiones,
         MpPlanExternoId = p.MpPlanExternoId,
         Activo = p.Activo,
         FechaHoraCreacion = p.FechaHoraCreacion,

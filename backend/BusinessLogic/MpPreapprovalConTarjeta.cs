@@ -33,7 +33,8 @@ internal static class MpPreapprovalConTarjeta
         decimal TransactionAmount,
         string CurrencyId,
         DateTime StartDateUtc,
-        DateTime EndDateUtc);
+        DateTime? EndDateUtc,
+        int? Repeticiones = null);
 
     internal record Resultado(bool Exitoso, string? Id, string? Estado, string? PayerId, string? Error, string? ErrorOriginal = null);
 
@@ -51,7 +52,8 @@ internal static class MpPreapprovalConTarjeta
                 datos.Frequency,
                 datos.FrequencyType,
                 StartDate = FormatearFecha(datos.StartDateUtc),
-                EndDate = FormatearFecha(datos.EndDateUtc),
+                EndDate = datos.EndDateUtc.HasValue ? FormatearFecha(datos.EndDateUtc.Value) : (string?)null,
+                Repetitions = datos.Repeticiones,
                 datos.TransactionAmount,
                 datos.CurrencyId,
             },

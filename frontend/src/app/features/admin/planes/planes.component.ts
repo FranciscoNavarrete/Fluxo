@@ -123,9 +123,16 @@ import { MpPlan } from '../../../shared/models';
             </div>
           </div>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Días gratis (opcional)</label>
-            <input type="number" formControlName="diasGratis" placeholder="0" min="0" class="fi" />
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Días gratis (opcional)</label>
+              <input type="number" formControlName="diasGratis" placeholder="0" min="0" class="fi" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Cantidad de cobros (opcional)</label>
+              <input type="number" formControlName="repeticiones" placeholder="Vacío = sin límite" min="1" class="fi" />
+              <p class="text-xs text-gray-400 dark:text-slate-500 mt-1">Ej: 12 = plan anual</p>
+            </div>
           </div>
 
           <div class="flex justify-end gap-3 pt-2 border-t border-gray-100 dark:border-indigo-900/20">
@@ -173,6 +180,12 @@ import { MpPlan } from '../../../shared/models';
                   <div>
                     <dt class="text-gray-400 dark:text-slate-500 text-xs">Moneda</dt>
                     <dd class="font-medium text-gray-700 dark:text-slate-300">{{ plan.moneda }}</dd>
+                  </div>
+                  <div>
+                    <dt class="text-gray-400 dark:text-slate-500 text-xs">Cobros</dt>
+                    <dd class="font-medium text-gray-700 dark:text-slate-300">
+                      {{ plan.repeticiones ? plan.repeticiones + ' cobros' : 'Sin límite' }}
+                    </dd>
                   </div>
                 </dl>
               </div>
@@ -230,6 +243,7 @@ export class PlanesComponent implements OnInit {
     tipoFrecuencia: ['months', Validators.required],
     frecuencia:    [1, [Validators.required, Validators.min(1)]],
     diasGratis:    [0],
+    repeticiones:  [null as number | null],
   });
 
   ngOnInit(): void {
@@ -238,7 +252,7 @@ export class PlanesComponent implements OnInit {
 
   abrirFormulario(): void {
     this.planEditando.set(null);
-    this.form.reset({ moneda: 'ARS', tipoFrecuencia: 'months', frecuencia: 1, diasGratis: 0 });
+    this.form.reset({ moneda: 'ARS', tipoFrecuencia: 'months', frecuencia: 1, diasGratis: 0, repeticiones: null });
     this.errorForm.set('');
     this.mostrarFormulario.set(true);
     setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
@@ -254,6 +268,7 @@ export class PlanesComponent implements OnInit {
       tipoFrecuencia: plan.tipoFrecuencia,
       frecuencia:     plan.frecuencia,
       diasGratis:     plan.diasGratis,
+      repeticiones:   plan.repeticiones ?? null,
     });
     this.errorForm.set('');
     this.mostrarFormulario.set(true);
@@ -283,6 +298,7 @@ export class PlanesComponent implements OnInit {
         tipoFrecuencia: v.tipoFrecuencia!,
         frecuencia:    Number(v.frecuencia),
         diasGratis:    Number(v.diasGratis ?? 0),
+        repeticiones:  v.repeticiones ? Number(v.repeticiones) : null,
         activo:        editando.activo,
       }).subscribe({
         next: plan => {
@@ -302,6 +318,7 @@ export class PlanesComponent implements OnInit {
         tipoFrecuencia: v.tipoFrecuencia!,
         frecuencia:    Number(v.frecuencia),
         diasGratis:    Number(v.diasGratis ?? 0),
+        repeticiones:  v.repeticiones ? Number(v.repeticiones) : null,
       }).subscribe({
         next: plan => {
           this.planes.update(lista => [plan, ...lista]);

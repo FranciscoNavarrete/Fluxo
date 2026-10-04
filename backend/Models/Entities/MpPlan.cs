@@ -16,6 +16,7 @@ public class MpPlan
     public string TipoFrecuencia { get; set; } = string.Empty;
     public int Frecuencia { get; set; }
     public int DiasGratis { get; set; }
+    public int? Repeticiones { get; set; }
 
     // ID del plan en Mercado Pago (si se crea allá también)
     public string? MpPlanExternoId { get; set; }
