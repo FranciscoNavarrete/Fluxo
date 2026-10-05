@@ -211,17 +211,36 @@ public class MpSuscripcionLogic : BaseLogic<MpSuscripcionDto>, IMpSuscripcionLog
 
     public async Task<RespuestaResultado<IEnumerable<EstadoSuscripcionDto>>> ObtenerEstadosAsync(IEnumerable<int> ids)
     {
-        var suscripciones = await _uow.MpSuscripcion.ObtenerPorIdsAsync(ids);
-        var estados = suscripciones.Select(s => new EstadoSuscripcionDto
+        var suscripciones = (await _uow.MpSuscripcion.ObtenerPorIdsAsync(ids)).ToList();
+
+        // Pocos planes distintos: se leen una vez cada uno para saber cuánto paga cada suscripción.
+        var planes = new Dictionary<int, MpPlan?>();
+        foreach (var planId in suscripciones.Select(s => s.MpPlanId).Distinct())
+            planes[planId] = await _uow.MpPlan.GetByIdAsync(planId);
+
+        var estados = suscripciones.Select(s =>
         {
-            MpSuscripcionId = s.MpSuscripcionId,
-            Estado = s.Estado,
-            Confirmada = s.Estado == "authorized" || !string.IsNullOrEmpty(s.MpPayerId),
-            PrimerCobroAprobado = s.UltimoCobro.HasValue,
-            AjusteMontoPendiente = s.UltimoCobro.HasValue && s.AjusteMontoPendiente,
-            CobroRechazado = s.CobroRechazado,
-            MotivoRechazo = s.CobroRechazado ? s.MotivoRechazo : null,
-        });
+            var plan = planes.GetValueOrDefault(s.MpPlanId);
+            var mensual = plan?.Monto ?? 0;
+            // Con el ajuste pendiente (o sin primer cobro todavía) lo próximo es el monto inicial del plan.
+            var proximo = plan is null ? 0 : (s.AjusteMontoPendiente || !s.UltimoCobro.HasValue ? CobroInicialHelper.MontoInicial(plan) : mensual);
+            return new EstadoSuscripcionDto
+            {
+                MpSuscripcionId = s.MpSuscripcionId,
+                Estado = s.Estado,
+                Confirmada = s.Estado == "authorized" || !string.IsNullOrEmpty(s.MpPayerId),
+                PrimerCobroAprobado = s.UltimoCobro.HasValue,
+                AjusteMontoPendiente = s.UltimoCobro.HasValue && s.AjusteMontoPendiente,
+                CobroRechazado = s.CobroRechazado,
+                MotivoRechazo = s.CobroRechazado ? s.MotivoRechazo : null,
+                ProximoReintento = s.CobroRechazado ? s.ProximoReintento : null,
+                MontoMensual = mensual,
+                MontoProximoCobro = proximo,
+                ProximoCobro = s.ProximoCobro,
+                FechaInicio = s.FechaInicio,
+                FechaCancelacion = s.FechaCancelacion,
+            };
+        }).ToList();
         return new RespuestaResultado<IEnumerable<EstadoSuscripcionDto>> { Exitoso = true, Contenido = estados };
     }
 

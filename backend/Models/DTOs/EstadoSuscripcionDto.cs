@@ -19,4 +19,15 @@ public class EstadoSuscripcionDto
     /// <summary>El último cobro fue rechazado (el primero o uno mensual); MotivoRechazo ya viene en español.</summary>
     public bool CobroRechazado { get; set; }
     public string? MotivoRechazo { get; set; }
+    public DateTime? ProximoReintento { get; set; }
+
+    // Datos para el resumen financiero de GestorPOS.
+    /// <summary>Lo que paga por mes según el plan.</summary>
+    public decimal MontoMensual { get; set; }
+
+    /// <summary>Lo que se le va a cobrar en el próximo cobro (el primero puede ser distinto del mensual).</summary>
+    public decimal MontoProximoCobro { get; set; }
+    public DateTime? ProximoCobro { get; set; }
+    public DateTime FechaInicio { get; set; }
+    public DateTime? FechaCancelacion { get; set; }
 }
