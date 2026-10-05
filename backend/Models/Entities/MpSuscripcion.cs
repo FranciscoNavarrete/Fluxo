@@ -46,6 +46,11 @@ public class MpSuscripcion
     // que bajar el monto al mensual del plan.
     public bool AjusteMontoPendiente { get; set; }
 
+    // El último cobro (alta o mensual) fue rechazado. Lo actualiza el sync de fondo.
+    public bool CobroRechazado { get; set; }
+    public string? MotivoRechazo { get; set; }
+    public DateTime? ProximoReintento { get; set; }
+
     public int UsuarioCreacionId { get; set; }
     public DateTime FechaHoraCreacion { get; set; }
     public int? UsuarioUltActualizacionId { get; set; }

@@ -219,8 +219,63 @@ public class MpSuscripcionLogic : BaseLogic<MpSuscripcionDto>, IMpSuscripcionLog
             Confirmada = s.Estado == "authorized" || !string.IsNullOrEmpty(s.MpPayerId),
             PrimerCobroAprobado = s.UltimoCobro.HasValue,
             AjusteMontoPendiente = s.UltimoCobro.HasValue && s.AjusteMontoPendiente,
+            CobroRechazado = s.CobroRechazado,
+            MotivoRechazo = s.CobroRechazado ? s.MotivoRechazo : null,
         });
         return new RespuestaResultado<IEnumerable<EstadoSuscripcionDto>> { Exitoso = true, Contenido = estados };
+    }
+
+    public async Task<RespuestaResultado<CobrosSuscripcionDto>> ObtenerCobrosAsync(int mpSuscripcionId)
+    {
+        var suscripcion = await _uow.MpSuscripcion.GetByIdAsync(mpSuscripcionId);
+        if (suscripcion is null)
+            return new RespuestaResultado<CobrosSuscripcionDto> { Exitoso = false, Mensaje = "Suscripción no encontrada." };
+
+        var plan = await _uow.MpPlan.GetByIdAsync(suscripcion.MpPlanId);
+        var token = _config["MercadoPago:AccessToken"] ?? string.Empty;
+
+        var cobrosMp = await MpPreapprovalApi.ObtenerCobrosAsync(token, suscripcion.GatewaySuscripcionId);
+        if (!cobrosMp.Ok)
+            return new RespuestaResultado<CobrosSuscripcionDto>
+            {
+                Exitoso = false,
+                Mensaje = "No se pudieron consultar los cobros en Mercado Pago. Probá de nuevo en un momento.",
+            };
+
+        var consulta = await MpPreapprovalApi.ObtenerAsync(token, suscripcion.GatewaySuscripcionId);
+
+        var ordenados = cobrosMp.Cobros.OrderBy(c => c.Fecha ?? DateTime.MaxValue).ToList();
+        var primero = ordenados.FirstOrDefault(c => MpCobros.Clasificar(c) != MpCobros.Programado);
+
+        var dto = new CobrosSuscripcionDto
+        {
+            MpSuscripcionId = suscripcion.MpSuscripcionId,
+            Estado = suscripcion.Estado,
+            MontoMensual = plan?.Monto ?? 0,
+            Moneda = plan?.Moneda ?? "ARS",
+            Cobros = ordenados
+                .Where(c => MpCobros.Clasificar(c) != MpCobros.Programado)
+                .OrderByDescending(c => c.Fecha ?? DateTime.MinValue)
+                .Select(c => new CobroDto
+                {
+                    Fecha = c.Fecha,
+                    Monto = c.Monto,
+                    Estado = MpCobros.Clasificar(c),
+                    Motivo = MpCobros.Motivo(c),
+                    Intento = c.Intento,
+                    ProximoReintento = c.ProximoReintento,
+                    EsPrimerCobro = ReferenceEquals(c, primero),
+                })
+                .ToList(),
+        };
+
+        if (suscripcion.Estado == "authorized" && consulta.Ok && consulta.Datos is not null)
+        {
+            dto.ProximoCobro = consulta.Datos.ProximoCobroUtc ?? suscripcion.ProximoCobro;
+            dto.ProximoMonto = consulta.Datos.Monto;
+        }
+
+        return new RespuestaResultado<CobrosSuscripcionDto> { Exitoso = true, Contenido = dto };
     }
 
     public async Task<RespuestaResultado<LinkPagoSuscripcionDto>> ObtenerLinkPagoAsync(int mpSuscripcionId)

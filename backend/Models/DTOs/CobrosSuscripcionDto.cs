@@ -1,0 +1,28 @@
+namespace Models.DTOs;
+
+/// <summary>Historial de cobros de una suscripción y el próximo cobro programado.</summary>
+public class CobrosSuscripcionDto
+{
+    public int MpSuscripcionId { get; set; }
+    public string Estado { get; set; } = string.Empty;
+    public decimal MontoMensual { get; set; }
+    public string Moneda { get; set; } = "ARS";
+    public DateTime? ProximoCobro { get; set; }
+    public decimal? ProximoMonto { get; set; }
+    public List<CobroDto> Cobros { get; set; } = [];
+}
+
+public class CobroDto
+{
+    public DateTime? Fecha { get; set; }
+    public decimal Monto { get; set; }
+
+    /// <summary>aprobado | rechazado | programado | pendiente | cancelado</summary>
+    public string Estado { get; set; } = string.Empty;
+
+    /// <summary>Motivo en español (acreditado, fondos insuficientes, etc.).</summary>
+    public string? Motivo { get; set; }
+    public int Intento { get; set; }
+    public DateTime? ProximoReintento { get; set; }
+    public bool EsPrimerCobro { get; set; }
+}

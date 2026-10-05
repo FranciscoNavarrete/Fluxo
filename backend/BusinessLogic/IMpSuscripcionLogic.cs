@@ -25,6 +25,10 @@ public interface IMpSuscripcionLogic
     /// <summary>Link de pago de una suscripción que sigue pendiente (para volver a mostrarlo/compartirlo).</summary>
     Task<RespuestaResultado<LinkPagoSuscripcionDto>> ObtenerLinkPagoAsync(int mpSuscripcionId);
 
+    /// <summary>Historial de cobros (con el motivo de los rechazos) y próximo cobro de una suscripción,
+    /// consultados a Mercado Pago.</summary>
+    Task<RespuestaResultado<CobrosSuscripcionDto>> ObtenerCobrosAsync(int mpSuscripcionId);
+
     Task<RespuestaResultado<ResultadoListaPaginada<MpSuscripcionDto>>> ListarAsync(
         int pagina, int tamanioPagina, string? estado = null, int? clienteId = null);
 

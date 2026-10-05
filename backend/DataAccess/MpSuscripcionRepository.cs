@@ -108,6 +108,19 @@ public class MpSuscripcionRepository : IMpSuscripcionRepository
         return await _db.QueryAsync<MpSuscripcion>(sql, new { Desde = creadasDesdeUtc, Maximo = maximo });
     }
 
+    public async Task<IEnumerable<MpSuscripcion>> ObtenerAutorizadasEnVentanaDeCobroAsync(int maximo)
+    {
+        const string sql = """
+            SELECT * FROM MpSuscripciones
+            WHERE Estado = 'authorized'
+              AND (CobroRechazado = TRUE
+                   OR (ProximoCobro >= NOW() - INTERVAL '12 days' AND ProximoCobro <= NOW() + INTERVAL '1 day'))
+            ORDER BY ProximoCobro DESC
+            LIMIT @Maximo
+            """;
+        return await _db.QueryAsync<MpSuscripcion>(sql, new { Maximo = maximo });
+    }
+
     public async Task<MpSuscripcion?> ObtenerActivaPorClienteAsync(int clienteId)
     {
         const string sql = """

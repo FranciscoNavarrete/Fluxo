@@ -16,6 +16,8 @@ public class SincronizacionSuscripcionesBackgroundService : BackgroundService
     private const int MaximoPorCiclo = 50;
     private static readonly TimeSpan VentanaPendientes = TimeSpan.FromDays(7);
     private static readonly TimeSpan VentanaCobros = TimeSpan.FromDays(60);
+    private const int CadaCuantosCiclosVentana = 10;
+    private int _ciclo;
     private static readonly TimeSpan PausaEntreConsultas = TimeSpan.FromMilliseconds(300);
 
     private readonly IServiceScopeFactory _scopeFactory;
@@ -84,8 +86,18 @@ public class SincronizacionSuscripcionesBackgroundService : BackgroundService
             await Task.Delay(PausaEntreConsultas, ct);
         }
 
-        var autorizadas = await uow.MpSuscripcion.ObtenerAutorizadasParaSincronizarCobrosAsync(
-            DateTime.UtcNow - VentanaCobros, MaximoPorCiclo);
+        var autorizadas = (await uow.MpSuscripcion.ObtenerAutorizadasParaSincronizarCobrosAsync(
+            DateTime.UtcNow - VentanaCobros, MaximoPorCiclo)).ToList();
+
+        // Las que están en su ventana de cobro (o con un cobro rechazado) se revisan menos seguido: es
+        // donde pueden aparecer rechazos de los cobros mensuales.
+        _ciclo++;
+        if (_ciclo % CadaCuantosCiclosVentana == 0)
+        {
+            var ids = autorizadas.Select(a => a.MpSuscripcionId).ToHashSet();
+            autorizadas.AddRange((await uow.MpSuscripcion.ObtenerAutorizadasEnVentanaDeCobroAsync(MaximoPorCiclo))
+                .Where(a => !ids.Contains(a.MpSuscripcionId)));
+        }
 
         foreach (var suscripcion in autorizadas)
         {

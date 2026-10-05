@@ -103,7 +103,6 @@ public class MpWebhookLogic : IMpWebhookLogic
 
             var suscripcion = await _uow.MpSuscripcion.ObtenerPorGatewayIdAsync(gatewaySuscripcionId);
             if (suscripcion is null || suscripcion.Estado != "authorized") return;
-            if (suscripcion.UltimoCobro.HasValue && !suscripcion.AjusteMontoPendiente) return;
 
             var token = _config["MercadoPago:AccessToken"] ?? string.Empty;
             var consulta = await MpPreapprovalApi.ObtenerAsync(token, gatewaySuscripcionId);
@@ -114,16 +113,31 @@ public class MpWebhookLogic : IMpWebhookLogic
             }
 
             var datos = consulta.Datos!;
-            if (datos.CobrosRealizados < 1) return;
+            var cambios = false;
 
-            if (!suscripcion.UltimoCobro.HasValue)
+            // Último y próximo cobro, que MP informa aunque no llegue el webhook (QAS no los recibe).
+            if (datos.CobrosRealizados >= 1)
             {
-                suscripcion.UltimoCobro = datos.UltimoCobroUtc ?? DateTime.UtcNow;
-                if (datos.ProximoCobroUtc.HasValue) suscripcion.ProximoCobro = datos.ProximoCobroUtc;
-                _logger.LogInformation("Suscripción {Id}: Mercado Pago ya cobró {Cobros} vez/veces.", suscripcion.MpSuscripcionId, datos.CobrosRealizados);
+                if (datos.UltimoCobroUtc.HasValue && (!suscripcion.UltimoCobro.HasValue || datos.UltimoCobroUtc > suscripcion.UltimoCobro))
+                {
+                    suscripcion.UltimoCobro = datos.UltimoCobroUtc;
+                    cambios = true;
+                }
+                else if (!suscripcion.UltimoCobro.HasValue)
+                {
+                    suscripcion.UltimoCobro = DateTime.UtcNow;
+                    cambios = true;
+                }
+
+                if (datos.ProximoCobroUtc.HasValue && datos.ProximoCobroUtc != suscripcion.ProximoCobro)
+                {
+                    suscripcion.ProximoCobro = datos.ProximoCobroUtc;
+                    cambios = true;
+                }
             }
 
-            if (suscripcion.AjusteMontoPendiente)
+            // Primer cobro aprobado: bajar el monto al mensual del plan.
+            if (suscripcion.AjusteMontoPendiente && datos.CobrosRealizados >= 1)
             {
                 var plan = await _uow.MpPlan.GetByIdAsync(suscripcion.MpPlanId);
                 if (plan is not null)
@@ -131,6 +145,7 @@ public class MpWebhookLogic : IMpWebhookLogic
                     if (datos.Monto == plan.Monto)
                     {
                         suscripcion.AjusteMontoPendiente = false;
+                        cambios = true;
                     }
                     else
                     {
@@ -138,6 +153,7 @@ public class MpWebhookLogic : IMpWebhookLogic
                         if (ajuste.Ok)
                         {
                             suscripcion.AjusteMontoPendiente = false;
+                            cambios = true;
                             _logger.LogInformation("Suscripción {Id}: monto bajado a {Monto} tras el primer cobro.", suscripcion.MpSuscripcionId, plan.Monto);
                         }
                         else
@@ -149,8 +165,28 @@ public class MpWebhookLogic : IMpWebhookLogic
                 }
             }
 
-            suscripcion.FechaHoraUltActualizacion = DateTime.UtcNow;
-            await _uow.MpSuscripcion.UpdateAsync(suscripcion);
+            // Cobro rechazado: el cobro más reciente según MP.
+            var cobrosMp = await MpPreapprovalApi.ObtenerCobrosAsync(token, gatewaySuscripcionId);
+            if (cobrosMp.Ok)
+            {
+                var (rechazado, motivo, reintento) = MpCobros.AnalizarRechazo(cobrosMp.Cobros);
+                if (rechazado != suscripcion.CobroRechazado || motivo != suscripcion.MotivoRechazo || reintento != suscripcion.ProximoReintento)
+                {
+                    suscripcion.CobroRechazado = rechazado;
+                    suscripcion.MotivoRechazo = motivo;
+                    suscripcion.ProximoReintento = reintento;
+                    cambios = true;
+                    if (rechazado)
+                        _logger.LogWarning("Suscripción {Id}: cobro rechazado ({Motivo}), próximo reintento {Reintento}.",
+                            suscripcion.MpSuscripcionId, motivo, reintento);
+                }
+            }
+
+            if (cambios)
+            {
+                suscripcion.FechaHoraUltActualizacion = DateTime.UtcNow;
+                await _uow.MpSuscripcion.UpdateAsync(suscripcion);
+            }
         }
         catch (Exception ex)
         {

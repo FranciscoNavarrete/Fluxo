@@ -45,6 +45,14 @@ public class VendedorController : BaseApiController
         return Ok(resultado);
     }
 
+    /// <summary>Historial de cobros de una suscripción (con motivo de los rechazos) y próximo cobro.</summary>
+    [HttpGet("suscripciones/{mpSuscripcionId:int}/cobros")]
+    public async Task<IActionResult> ObtenerCobros(int mpSuscripcionId)
+    {
+        var resultado = await _suscripcionLogic.ObtenerCobrosAsync(mpSuscripcionId);
+        return resultado.Exitoso ? Ok(resultado) : NotFound(resultado);
+    }
+
     /// <summary>Link de pago de una suscripción pendiente, para que GestorPOS lo pueda volver a mostrar.</summary>
     [HttpGet("suscripciones/{mpSuscripcionId:int}/link")]
     public async Task<IActionResult> ObtenerLinkPago(int mpSuscripcionId)

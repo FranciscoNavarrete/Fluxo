@@ -15,4 +15,8 @@ public class EstadoSuscripcionDto
 
     /// <summary>El primer cobro se aprobó pero todavía no se pudo bajar el monto al mensual del plan.</summary>
     public bool AjusteMontoPendiente { get; set; }
+
+    /// <summary>El último cobro fue rechazado (el primero o uno mensual); MotivoRechazo ya viene en español.</summary>
+    public bool CobroRechazado { get; set; }
+    public string? MotivoRechazo { get; set; }
 }

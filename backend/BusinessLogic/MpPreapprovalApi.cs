@@ -55,6 +55,56 @@ internal static class MpPreapprovalApi
         }
     }
 
+    internal static async Task<(bool Ok, IReadOnlyList<MpCobro> Cobros, string? Error)> ObtenerCobrosAsync(
+        string accessToken, string preapprovalId)
+    {
+        using var request = new HttpRequestMessage(
+            HttpMethod.Get, $"/authorized_payments/search?preapproval_id={Uri.EscapeDataString(preapprovalId)}");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+        try
+        {
+            using var response = await Http.SendAsync(request);
+            var texto = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+                return (false, [], $"HTTP {(int)response.StatusCode}: {texto}");
+
+            using var doc = JsonDocument.Parse(texto);
+            var cobros = new List<MpCobro>();
+            if (doc.RootElement.TryGetProperty("results", out var resultados) && resultados.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var r in resultados.EnumerateArray())
+                {
+                    string? pagoEstado = null, pagoDetalle = null;
+                    if (r.TryGetProperty("payment", out var pago) && pago.ValueKind == JsonValueKind.Object)
+                    {
+                        pagoEstado = LeerTexto(pago, "status");
+                        pagoDetalle = LeerTexto(pago, "status_detail");
+                    }
+
+                    cobros.Add(new MpCobro(
+                        Id: r.TryGetProperty("id", out var id) && id.ValueKind == JsonValueKind.Number ? id.GetInt64() : 0,
+                        Estado: LeerTexto(r, "status") ?? string.Empty,
+                        Monto: r.TryGetProperty("transaction_amount", out var m) && m.ValueKind == JsonValueKind.Number ? m.GetDecimal() : 0,
+                        Fecha: LeerFecha(r, "debit_date"),
+                        Intento: r.TryGetProperty("retry_attempt", out var ia) && ia.ValueKind == JsonValueKind.Number ? ia.GetInt32() : 0,
+                        ProximoReintento: LeerFecha(r, "next_retry_date"),
+                        PagoEstado: pagoEstado,
+                        PagoDetalle: pagoDetalle));
+                }
+            }
+
+            return (true, cobros, null);
+        }
+        catch (Exception ex)
+        {
+            return (false, [], ex.Message);
+        }
+    }
+
+    private static string? LeerTexto(JsonElement elemento, string propiedad)
+        => elemento.TryGetProperty(propiedad, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
+
     internal static async Task<(bool Ok, string? Error)> ActualizarMontoAsync(
         string accessToken, string preapprovalId, decimal monto, string moneda)
     {
