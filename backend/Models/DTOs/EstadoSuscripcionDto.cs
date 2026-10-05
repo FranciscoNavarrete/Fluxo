@@ -9,4 +9,10 @@ public class EstadoSuscripcionDto
     /// Sirve para saber si una venta se concretó: un "cancelled" puede ser una baja posterior o
     /// una suscripción que nunca se pagó.</summary>
     public bool Confirmada { get; set; }
+
+    /// <summary>Mercado Pago ya aprobó al menos un cobro de la suscripción.</summary>
+    public bool PrimerCobroAprobado { get; set; }
+
+    /// <summary>El primer cobro se aprobó pero todavía no se pudo bajar el monto al mensual del plan.</summary>
+    public bool AjusteMontoPendiente { get; set; }
 }

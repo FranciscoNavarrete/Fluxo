@@ -42,6 +42,10 @@ public class MpSuscripcion
 
     public string? InitPoint { get; set; }
 
+    // La suscripción se creó en MP con el monto del primer cobro; cuando ese cobro se aprueba hay
+    // que bajar el monto al mensual del plan.
+    public bool AjusteMontoPendiente { get; set; }
+
     public int UsuarioCreacionId { get; set; }
     public DateTime FechaHoraCreacion { get; set; }
     public int? UsuarioUltActualizacionId { get; set; }

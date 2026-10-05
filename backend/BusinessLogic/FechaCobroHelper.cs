@@ -1,5 +1,15 @@
 namespace BusinessLogic;
 
+public static class CobroInicialHelper
+{
+    /// <summary>Monto con el que se crea la suscripción en MP: el del primer cobro si el plan lo define.</summary>
+    public static decimal MontoInicial(Models.Entities.MpPlan plan) => plan.MontoPrimerCobro ?? plan.Monto;
+
+    /// <summary>Si el primer cobro difiere del mensual, hay que bajar el monto cuando ese cobro se aprueba.</summary>
+    public static bool RequiereAjuste(Models.Entities.MpPlan plan)
+        => plan.MontoPrimerCobro.HasValue && plan.MontoPrimerCobro.Value != plan.Monto;
+}
+
 public static class FechaCobroHelper
 {
     /// <summary>

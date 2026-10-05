@@ -11,6 +11,7 @@ public class MpPlanDto
     public int Frecuencia { get; set; }
     public int DiasGratis { get; set; }
     public int? Repeticiones { get; set; }
+    public decimal? MontoPrimerCobro { get; set; }
     public string? MpPlanExternoId { get; set; }
     public bool Activo { get; set; }
     public DateTime FechaHoraCreacion { get; set; }

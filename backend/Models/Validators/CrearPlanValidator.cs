@@ -21,6 +21,10 @@ public class CrearPlanValidator : AbstractValidator<CrearPlanRequest>
         RuleFor(x => x.Monto)
             .GreaterThan(0).WithMessage("El monto debe ser mayor a cero.");
 
+        RuleFor(x => x.MontoPrimerCobro)
+            .GreaterThan(0).WithMessage("El monto del primer cobro debe ser mayor a cero.")
+            .When(x => x.MontoPrimerCobro.HasValue);
+
         RuleFor(x => x.Moneda)
             .NotEmpty().WithMessage("La moneda es obligatoria.")
             .Must(m => _monedasValidas.Contains(m.ToUpper()))

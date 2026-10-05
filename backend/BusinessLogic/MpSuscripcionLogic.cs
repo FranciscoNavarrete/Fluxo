@@ -57,47 +57,28 @@ public class MpSuscripcionLogic : BaseLogic<MpSuscripcionDto>, IMpSuscripcionLog
                 Mensaje = "El plan seleccionado no existe o no está activo."
             };
 
-        MercadoPagoConfig.AccessToken = _config["MercadoPago:AccessToken"];
-        var mpClient = new PreapprovalClient();
+        var mpResponse = await MpPreapprovalConTarjeta.CrearAsync(
+            _config["MercadoPago:AccessToken"] ?? string.Empty,
+            new MpPreapprovalConTarjeta.Datos(
+                Reason:            plan.Nombre,
+                ExternalReference: $"client_{request.ClienteId}_plan_{request.MpPlanId}",
+                PayerEmail:        string.IsNullOrEmpty(request.PayerEmail) ? null : request.PayerEmail,
+                CardTokenId:       null,
+                BackUrl:           request.BackUrl ?? _config["MercadoPago:BackUrl"] ?? string.Empty,
+                Frequency:         plan.Frecuencia,
+                FrequencyType:     plan.TipoFrecuencia,
+                TransactionAmount: CobroInicialHelper.MontoInicial(plan),
+                CurrencyId:        plan.Moneda,
+                StartDateUtc:      FechaCobroHelper.PrimerCobro(DateTime.UtcNow, plan.DiasGratis),
+                EndDateUtc:        plan.Repeticiones.HasValue ? null : DateTime.UtcNow.AddYears(10),
+                Repeticiones:      plan.Repeticiones,
+                Status:            "pending"));
 
-        var mpRequest = new PreapprovalCreateRequest
-        {
-            Reason = plan.Nombre,
-            ExternalReference = $"client_{request.ClienteId}_plan_{request.MpPlanId}",
-            BackUrl = request.BackUrl ?? _config["MercadoPago:BackUrl"],
-            PayerEmail = string.IsNullOrEmpty(request.PayerEmail) ? null : request.PayerEmail,
-            AutoRecurring = new PreApprovalAutoRecurringCreateRequest
-            {
-                Frequency = plan.Frecuencia,
-                FrequencyType = plan.TipoFrecuencia,
-                TransactionAmount = plan.Monto,
-                CurrencyId = plan.Moneda,
-                StartDate = FechaCobroHelper.PrimerCobro(DateTime.UtcNow, plan.DiasGratis),
-                Repetitions = plan.Repeticiones,
-                EndDate = plan.Repeticiones.HasValue ? null : DateTime.UtcNow.AddYears(10)
-            },
-            Status = "pending"
-        };
-
-        MercadoPago.Resource.PreApproval.Preapproval? mpResponse = null;
-        try
-        {
-            mpResponse = await mpClient.CreateAsync(mpRequest);
-        }
-        catch (Exception ex)
-        {
+        if (!mpResponse.Exitoso)
             return new RespuestaResultado<CrearSuscripcionResultado>
             {
                 Exitoso = false,
-                Mensaje = $"Error al comunicarse con Mercado Pago: {ex.Message}"
-            };
-        }
-
-        if (string.IsNullOrEmpty(mpResponse?.Id))
-            return new RespuestaResultado<CrearSuscripcionResultado>
-            {
-                Exitoso = false,
-                Mensaje = "Mercado Pago no devolvió un ID de suscripción. Verificá el AccessToken y los datos del plan."
+                Mensaje = mpResponse.Error ?? "Mercado Pago no devolvió un ID de suscripción. Verificá el AccessToken y los datos del plan."
             };
 
         var ahora = DateTime.UtcNow;
@@ -105,12 +86,13 @@ public class MpSuscripcionLogic : BaseLogic<MpSuscripcionDto>, IMpSuscripcionLog
         {
             ClienteId = request.ClienteId,
             MpPlanId = request.MpPlanId,
-            GatewaySuscripcionId = mpResponse.Id,
+            GatewaySuscripcionId = mpResponse.Id!,
             GatewayProveedor = "MercadoPago",
             Estado = "pending",
             FechaInicio = ahora,
             DiaCobro = request.DiaCobro,
             ProximoCobro = FechaCobroHelper.PrimerCobro(ahora, plan.DiasGratis),
+            AjusteMontoPendiente = CobroInicialHelper.RequiereAjuste(plan),
             IntentosReintento = 0,
             MaxReintentos = 3,
             InitPoint = mpResponse.InitPoint,
@@ -145,7 +127,7 @@ public class MpSuscripcionLogic : BaseLogic<MpSuscripcionDto>, IMpSuscripcionLog
             Contenido = new CrearSuscripcionResultado
             {
                 MpSuscripcionId = id,
-                GatewaySuscripcionId = mpResponse.Id,
+                GatewaySuscripcionId = mpResponse.Id!,
                 InitPoint = mpResponse.InitPoint ?? string.Empty,
                 Estado = "pending"
             }
@@ -170,47 +152,38 @@ public class MpSuscripcionLogic : BaseLogic<MpSuscripcionDto>, IMpSuscripcionLog
         if (plan is null || !plan.Activo)
             return RespuestaError("El plan seleccionado no existe o no está activo.");
 
-        MercadoPagoConfig.AccessToken = _config["MercadoPago:AccessToken"];
-        var mpClient = new PreapprovalClient();
+        var mpResponse = await MpPreapprovalConTarjeta.CrearAsync(
+            _config["MercadoPago:AccessToken"] ?? string.Empty,
+            new MpPreapprovalConTarjeta.Datos(
+                Reason:            plan.Nombre,
+                ExternalReference: $"client_{request.ClienteId}_plan_{request.MpPlanId}",
+                PayerEmail:        request.PayerEmail,
+                CardTokenId:       request.CardTokenId,
+                BackUrl:           _config["MercadoPago:BackUrl"] ?? string.Empty,
+                Frequency:         plan.Frecuencia,
+                FrequencyType:     plan.TipoFrecuencia,
+                TransactionAmount: CobroInicialHelper.MontoInicial(plan),
+                CurrencyId:        plan.Moneda,
+                StartDateUtc:      FechaCobroHelper.PrimerCobro(DateTime.UtcNow, plan.DiasGratis),
+                EndDateUtc:        plan.Repeticiones.HasValue ? null : DateTime.UtcNow.AddYears(10),
+                Repeticiones:      plan.Repeticiones));
 
-        // El SDK 2.4.x no expone CardTokenId/PaymentMethodId en PreapprovalCreateRequest.
-        // La suscripción se crea como pending y MP gestiona la captura de tarjeta internamente.
-        var mpRequest = new PreapprovalCreateRequest
-        {
-            Reason = plan.Nombre,
-            ExternalReference = $"client_{request.ClienteId}_plan_{request.MpPlanId}",
-            BackUrl = _config["MercadoPago:BackUrl"],
-            PayerEmail = request.PayerEmail,
-            AutoRecurring = new PreApprovalAutoRecurringCreateRequest
-            {
-                Frequency = plan.Frecuencia,
-                FrequencyType = plan.TipoFrecuencia,
-                TransactionAmount = plan.Monto,
-                CurrencyId = plan.Moneda,
-                StartDate = FechaCobroHelper.PrimerCobro(DateTime.UtcNow, plan.DiasGratis),
-                Repetitions = plan.Repeticiones,
-                EndDate = plan.Repeticiones.HasValue ? null : DateTime.UtcNow.AddYears(10)
-            },
-            Status = "authorized"
-        };
-
-        var mpResponse = await mpClient.CreateAsync(mpRequest);
-
-        if (string.IsNullOrEmpty(mpResponse.Id))
-            return RespuestaError("Error al crear la suscripción en Mercado Pago.");
+        if (!mpResponse.Exitoso)
+            return RespuestaError(mpResponse.Error ?? "Error al crear la suscripción en Mercado Pago.");
 
         var ahora = DateTime.UtcNow;
         var suscripcion = new MpSuscripcion
         {
             ClienteId = request.ClienteId,
             MpPlanId = request.MpPlanId,
-            GatewaySuscripcionId = mpResponse.Id,
+            GatewaySuscripcionId = mpResponse.Id!,
             GatewayProveedor = "MercadoPago",
-            MpPayerId = mpResponse.PayerId?.ToString(),
+            MpPayerId = mpResponse.PayerId,
             Estado = "authorized",
             FechaInicio = ahora,
             DiaCobro = request.DiaCobro,
             ProximoCobro = FechaCobroHelper.PrimerCobro(ahora, plan.DiasGratis),
+            AjusteMontoPendiente = CobroInicialHelper.RequiereAjuste(plan),
             IntentosReintento = 0,
             MaxReintentos = 3,
             ConsentimientoFecha = ahora,
@@ -244,6 +217,8 @@ public class MpSuscripcionLogic : BaseLogic<MpSuscripcionDto>, IMpSuscripcionLog
             MpSuscripcionId = s.MpSuscripcionId,
             Estado = s.Estado,
             Confirmada = s.Estado == "authorized" || !string.IsNullOrEmpty(s.MpPayerId),
+            PrimerCobroAprobado = s.UltimoCobro.HasValue,
+            AjusteMontoPendiente = s.UltimoCobro.HasValue && s.AjusteMontoPendiente,
         });
         return new RespuestaResultado<IEnumerable<EstadoSuscripcionDto>> { Exitoso = true, Contenido = estados };
     }

@@ -1,2 +1,2 @@
-ALTER TABLE MpPlanes
-ADD Repeticiones INT NULL;
+ALTER TABLE mpplanes
+ADD COLUMN IF NOT EXISTS repeticiones INT NULL;

@@ -18,6 +18,9 @@ public class MpPlan
     public int DiasGratis { get; set; }
     public int? Repeticiones { get; set; }
 
+    // Monto del primer cobro (alta + primer mes). NULL = el primer cobro es el monto mensual.
+    public decimal? MontoPrimerCobro { get; set; }
+
     // ID del plan en Mercado Pago (si se crea allá también)
     public string? MpPlanExternoId { get; set; }
     public bool Activo { get; set; } = true;

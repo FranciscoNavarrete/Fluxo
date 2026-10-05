@@ -18,6 +18,7 @@ export interface MpPlan {
   frecuencia: number;
   diasGratis: number;
   repeticiones?: number | null;
+  montoPrimerCobro?: number | null;
   mpPlanExternoId?: string;
   activo: boolean;
   fechaHoraCreacion: string;
@@ -32,6 +33,7 @@ export interface CrearPlanRequest {
   frecuencia: number;
   diasGratis: number;
   repeticiones?: number | null;
+  montoPrimerCobro?: number | null;
 }
 
 export interface EditarPlanRequest {
@@ -44,6 +46,7 @@ export interface EditarPlanRequest {
   frecuencia: number;
   diasGratis: number;
   repeticiones?: number | null;
+  montoPrimerCobro?: number | null;
   activo: boolean;
 }
 

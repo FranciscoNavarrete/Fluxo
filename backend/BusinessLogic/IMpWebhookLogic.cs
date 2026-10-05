@@ -24,4 +24,11 @@ public interface IMpWebhookLogic
     /// No tira excepciones: si falla lo registra en el log.
     /// </summary>
     Task SincronizarSuscripcionAsync(string gatewaySuscripcionId);
+
+    /// <summary>
+    /// Para suscripciones autorizadas: detecta si Mercado Pago ya cobró (guarda el último cobro) y, si la
+    /// suscripción se creó con un primer cobro distinto al mensual, baja el monto al mensual del plan.
+    /// No tira excepciones.
+    /// </summary>
+    Task SincronizarCobrosAsync(string gatewaySuscripcionId);
 }

@@ -95,6 +95,69 @@ public class MpWebhookLogic : IMpWebhookLogic
         }
     }
 
+    public async Task SincronizarCobrosAsync(string gatewaySuscripcionId)
+    {
+        try
+        {
+            await ProcesarCambioEstadoSuscripcionAsync(gatewaySuscripcionId);
+
+            var suscripcion = await _uow.MpSuscripcion.ObtenerPorGatewayIdAsync(gatewaySuscripcionId);
+            if (suscripcion is null || suscripcion.Estado != "authorized") return;
+            if (suscripcion.UltimoCobro.HasValue && !suscripcion.AjusteMontoPendiente) return;
+
+            var token = _config["MercadoPago:AccessToken"] ?? string.Empty;
+            var consulta = await MpPreapprovalApi.ObtenerAsync(token, gatewaySuscripcionId);
+            if (!consulta.Ok)
+            {
+                _logger.LogWarning("No se pudo consultar los cobros de la suscripción {Id}: {Error}", suscripcion.MpSuscripcionId, consulta.Error);
+                return;
+            }
+
+            var datos = consulta.Datos!;
+            if (datos.CobrosRealizados < 1) return;
+
+            if (!suscripcion.UltimoCobro.HasValue)
+            {
+                suscripcion.UltimoCobro = datos.UltimoCobroUtc ?? DateTime.UtcNow;
+                if (datos.ProximoCobroUtc.HasValue) suscripcion.ProximoCobro = datos.ProximoCobroUtc;
+                _logger.LogInformation("Suscripción {Id}: Mercado Pago ya cobró {Cobros} vez/veces.", suscripcion.MpSuscripcionId, datos.CobrosRealizados);
+            }
+
+            if (suscripcion.AjusteMontoPendiente)
+            {
+                var plan = await _uow.MpPlan.GetByIdAsync(suscripcion.MpPlanId);
+                if (plan is not null)
+                {
+                    if (datos.Monto == plan.Monto)
+                    {
+                        suscripcion.AjusteMontoPendiente = false;
+                    }
+                    else
+                    {
+                        var ajuste = await MpPreapprovalApi.ActualizarMontoAsync(token, gatewaySuscripcionId, plan.Monto, plan.Moneda);
+                        if (ajuste.Ok)
+                        {
+                            suscripcion.AjusteMontoPendiente = false;
+                            _logger.LogInformation("Suscripción {Id}: monto bajado a {Monto} tras el primer cobro.", suscripcion.MpSuscripcionId, plan.Monto);
+                        }
+                        else
+                        {
+                            _logger.LogError("Suscripción {Id}: no se pudo bajar el monto a {Monto}: {Error}. Se reintenta.",
+                                suscripcion.MpSuscripcionId, plan.Monto, ajuste.Error);
+                        }
+                    }
+                }
+            }
+
+            suscripcion.FechaHoraUltActualizacion = DateTime.UtcNow;
+            await _uow.MpSuscripcion.UpdateAsync(suscripcion);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "No se pudo sincronizar los cobros de la suscripción {GatewayId}.", gatewaySuscripcionId);
+        }
+    }
+
     private async Task ProcesarPagoAsync(string paymentId)
     {
         MercadoPagoConfig.AccessToken = _config["MercadoPago:AccessToken"];

@@ -167,7 +167,7 @@ public class AuthLogic : IAuthLogic
                     BackUrl:           _config["MercadoPago:BackUrl"] ?? string.Empty,
                     Frequency:         planTarjeta.Frecuencia,
                     FrequencyType:     planTarjeta.TipoFrecuencia,
-                    TransactionAmount: planTarjeta.Monto,
+                    TransactionAmount: CobroInicialHelper.MontoInicial(planTarjeta),
                     CurrencyId:        planTarjeta.Moneda,
                     StartDateUtc:      FechaCobroHelper.PrimerCobro(DateTime.UtcNow, planTarjeta.DiasGratis),
                     EndDateUtc:        planTarjeta.Repeticiones.HasValue ? null : DateTime.UtcNow.AddYears(10),
@@ -195,6 +195,7 @@ public class AuthLogic : IAuthLogic
                 FechaInicio          = ahoraTarjeta,
                 DiaCobro             = request.DiaCobro,
                 ProximoCobro         = FechaCobroHelper.PrimerCobro(ahoraTarjeta, planTarjeta.DiasGratis),
+                AjusteMontoPendiente = CobroInicialHelper.RequiereAjuste(planTarjeta),
                 IntentosReintento    = 0,
                 MaxReintentos        = 3,
                 ConsentimientoFecha  = ahoraTarjeta,
@@ -227,41 +228,37 @@ public class AuthLogic : IAuthLogic
             {
                 try
                 {
-                    MercadoPagoConfig.AccessToken = _config["MercadoPago:AccessToken"];
-                    var mpRequest = new PreapprovalCreateRequest
-                    {
-                        Reason            = plan.Nombre,
-                        ExternalReference = $"client_{clienteId}_plan_{plan.MpPlanId}",
-                        BackUrl           = _config["MercadoPago:BackUrl"],
-                        PayerEmail        = email,
-                        AutoRecurring     = new PreApprovalAutoRecurringCreateRequest
-                        {
-                            Frequency         = plan.Frecuencia,
-                            FrequencyType     = plan.TipoFrecuencia,
-                            TransactionAmount = plan.Monto,
-                            CurrencyId        = plan.Moneda,
-                            StartDate         = FechaCobroHelper.PrimerCobro(DateTime.UtcNow, plan.DiasGratis),
-                            Repetitions       = plan.Repeticiones,
-                            EndDate           = plan.Repeticiones.HasValue ? null : DateTime.UtcNow.AddYears(10),
-                        },
-                        Status = "pending",
-                    };
+                    var mpResponse = await MpPreapprovalConTarjeta.CrearAsync(
+                        _config["MercadoPago:AccessToken"] ?? string.Empty,
+                        new MpPreapprovalConTarjeta.Datos(
+                            Reason:            plan.Nombre,
+                            ExternalReference: $"client_{clienteId}_plan_{plan.MpPlanId}",
+                            PayerEmail:        email,
+                            CardTokenId:       null,
+                            BackUrl:           _config["MercadoPago:BackUrl"] ?? string.Empty,
+                            Frequency:         plan.Frecuencia,
+                            FrequencyType:     plan.TipoFrecuencia,
+                            TransactionAmount: CobroInicialHelper.MontoInicial(plan),
+                            CurrencyId:        plan.Moneda,
+                            StartDateUtc:      FechaCobroHelper.PrimerCobro(DateTime.UtcNow, plan.DiasGratis),
+                            EndDateUtc:        plan.Repeticiones.HasValue ? null : DateTime.UtcNow.AddYears(10),
+                            Repeticiones:      plan.Repeticiones,
+                            Status:            "pending"));
 
-                    var mpResponse = await new PreapprovalClient().CreateAsync(mpRequest);
-
-                    if (!string.IsNullOrEmpty(mpResponse?.Id))
+                    if (mpResponse.Exitoso)
                     {
                         var ahora = DateTime.UtcNow;
                         var suscripcion = new MpSuscripcion
                         {
                             ClienteId                = clienteId,
                             MpPlanId                 = plan.MpPlanId,
-                            GatewaySuscripcionId     = mpResponse.Id,
+                            GatewaySuscripcionId     = mpResponse.Id!,
                             GatewayProveedor         = "MercadoPago",
                             Estado                   = "pending",
                             FechaInicio              = ahora,
                             DiaCobro                 = request.DiaCobro,
                             ProximoCobro             = FechaCobroHelper.PrimerCobro(ahora, plan.DiasGratis),
+                            AjusteMontoPendiente     = CobroInicialHelper.RequiereAjuste(plan),
                             IntentosReintento        = 0,
                             MaxReintentos            = 3,
                             InitPoint                = mpResponse.InitPoint,
@@ -278,7 +275,10 @@ public class AuthLogic : IAuthLogic
                     }
                     else
                     {
-                        falloSuscripcion = "Mercado Pago no devolvió el id de la suscripción.";
+                        _logger.LogWarning(
+                            "Mercado Pago rechazó la suscripción por link de clienteId={ClienteId} planId={PlanId}: {Error}",
+                            clienteId, plan.MpPlanId, mpResponse.ErrorOriginal ?? mpResponse.Error);
+                        falloSuscripcion = mpResponse.Error ?? "Mercado Pago no devolvió el id de la suscripción.";
                     }
                 }
                 catch (Exception ex)

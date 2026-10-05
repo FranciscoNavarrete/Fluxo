@@ -15,6 +15,7 @@ public class SincronizacionSuscripcionesBackgroundService : BackgroundService
 {
     private const int MaximoPorCiclo = 50;
     private static readonly TimeSpan VentanaPendientes = TimeSpan.FromDays(7);
+    private static readonly TimeSpan VentanaCobros = TimeSpan.FromDays(60);
     private static readonly TimeSpan PausaEntreConsultas = TimeSpan.FromMilliseconds(300);
 
     private readonly IServiceScopeFactory _scopeFactory;
@@ -80,6 +81,17 @@ public class SincronizacionSuscripcionesBackgroundService : BackgroundService
             if (ct.IsCancellationRequested) break;
 
             await webhookLogic.SincronizarSuscripcionAsync(suscripcion.GatewaySuscripcionId);
+            await Task.Delay(PausaEntreConsultas, ct);
+        }
+
+        var autorizadas = await uow.MpSuscripcion.ObtenerAutorizadasParaSincronizarCobrosAsync(
+            DateTime.UtcNow - VentanaCobros, MaximoPorCiclo);
+
+        foreach (var suscripcion in autorizadas)
+        {
+            if (ct.IsCancellationRequested) break;
+
+            await webhookLogic.SincronizarCobrosAsync(suscripcion.GatewaySuscripcionId);
             await Task.Delay(PausaEntreConsultas, ct);
         }
     }

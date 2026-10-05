@@ -1,0 +1,5 @@
+ALTER TABLE mpplanes
+ADD COLUMN IF NOT EXISTS montoprimercobro NUMERIC(18,2) NULL;
+
+ALTER TABLE mpsuscripciones
+ADD COLUMN IF NOT EXISTS ajustemontopendiente BOOLEAN NOT NULL DEFAULT FALSE;

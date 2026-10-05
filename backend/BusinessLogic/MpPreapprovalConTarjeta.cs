@@ -6,7 +6,9 @@ namespace BusinessLogic;
 
 /// <summary>
 /// El SDK de Mercado Pago 2.4.x no expone card_token_id en PreapprovalCreateRequest, así que la
-/// suscripción con tarjeta se crea pegándole directo a la API REST de preapproval.
+/// suscripción con tarjeta se crea pegándole directo a la API REST de preapproval. Sin CardTokenId y
+/// con Status "pending" crea la suscripción para pagar por link (init_point); también cubre
+/// repeticiones (Repetitions), que el SDK tampoco expone.
 /// </summary>
 internal static class MpPreapprovalConTarjeta
 {
@@ -25,8 +27,8 @@ internal static class MpPreapprovalConTarjeta
     internal record Datos(
         string Reason,
         string ExternalReference,
-        string PayerEmail,
-        string CardTokenId,
+        string? PayerEmail,
+        string? CardTokenId,
         string BackUrl,
         int Frequency,
         string FrequencyType,
@@ -34,9 +36,10 @@ internal static class MpPreapprovalConTarjeta
         string CurrencyId,
         DateTime StartDateUtc,
         DateTime? EndDateUtc,
-        int? Repeticiones = null);
+        int? Repeticiones = null,
+        string Status = "authorized");
 
-    internal record Resultado(bool Exitoso, string? Id, string? Estado, string? PayerId, string? Error, string? ErrorOriginal = null);
+    internal record Resultado(bool Exitoso, string? Id, string? Estado, string? PayerId, string? Error, string? ErrorOriginal = null, string? InitPoint = null);
 
     internal static async Task<Resultado> CrearAsync(string accessToken, Datos datos)
     {
@@ -57,7 +60,7 @@ internal static class MpPreapprovalConTarjeta
                 datos.TransactionAmount,
                 datos.CurrencyId,
             },
-            Status = "authorized",
+            datos.Status,
         };
 
         using var request = new HttpRequestMessage(HttpMethod.Post, "/preapproval")
@@ -85,11 +88,12 @@ internal static class MpPreapprovalConTarjeta
                 return new Resultado(false, null, null, null, "Mercado Pago no devolvió el id de la suscripción.");
 
             string? estado = raiz.TryGetProperty("status", out var stEl) ? stEl.GetString() : null;
+            string? initPoint = raiz.TryGetProperty("init_point", out var ipEl) && ipEl.ValueKind == JsonValueKind.String ? ipEl.GetString() : null;
             string? payerId = raiz.TryGetProperty("payer_id", out var pEl) && pEl.ValueKind != JsonValueKind.Null
                 ? pEl.ToString()
                 : null;
 
-            return new Resultado(true, id, estado, payerId, null);
+            return new Resultado(true, id, estado, payerId, null, null, initPoint);
         }
         catch (Exception ex)
         {
