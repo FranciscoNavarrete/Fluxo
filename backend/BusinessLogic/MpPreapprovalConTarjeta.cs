@@ -79,7 +79,7 @@ internal static class MpPreapprovalConTarjeta
 
             if (!response.IsSuccessStatusCode)
             {
-                var (amigable, original) = ExtraerError(raiz, response.StatusCode);
+                var (amigable, original) = ExtraerError(raiz, response.StatusCode, texto);
                 return new Resultado(false, null, null, null, amigable, original);
             }
 
@@ -104,12 +104,14 @@ internal static class MpPreapprovalConTarjeta
     private static string FormatearFecha(DateTime utc)
         => utc.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'");
 
-    private static (string Amigable, string? Original) ExtraerError(JsonElement raiz, System.Net.HttpStatusCode status)
+    private static (string Amigable, string? Original) ExtraerError(JsonElement raiz, System.Net.HttpStatusCode status, string cuerpo)
     {
         if (raiz.ValueKind == JsonValueKind.Object && raiz.TryGetProperty("message", out var m) && m.ValueKind == JsonValueKind.String)
         {
             var original = m.GetString();
-            return (MpErrores.Traducir(original), original);
+            // Se conserva el cuerpo completo (con "cause" si viene) para poder diagnosticar en los logs.
+            var detalle = cuerpo.Length > 600 ? cuerpo[..600] : cuerpo;
+            return (MpErrores.Traducir(original), $"{original} | HTTP {(int)status} | {detalle}");
         }
         return ($"Mercado Pago rechazó la suscripción (HTTP {(int)status}).", null);
     }
