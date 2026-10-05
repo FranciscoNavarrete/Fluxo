@@ -105,6 +105,44 @@ internal static class MpPreapprovalApi
     private static string? LeerTexto(JsonElement elemento, string propiedad)
         => elemento.TryGetProperty(propiedad, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
 
+    /// <summary>Cambia la tarjeta de una suscripción: el token lo genera el navegador (Card Payment Brick).</summary>
+    internal static async Task<(bool Ok, string? Error, string? ErrorOriginal)> ActualizarTarjetaAsync(
+        string accessToken, string preapprovalId, string cardTokenId)
+    {
+        var cuerpo = new { card_token_id = cardTokenId };
+
+        using var request = new HttpRequestMessage(HttpMethod.Put, $"/preapproval/{Uri.EscapeDataString(preapprovalId)}")
+        {
+            Content = new StringContent(JsonSerializer.Serialize(cuerpo), Encoding.UTF8, "application/json"),
+        };
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+        try
+        {
+            using var response = await Http.SendAsync(request);
+            if (response.IsSuccessStatusCode) return (true, null, null);
+
+            var texto = await response.Content.ReadAsStringAsync();
+            string? mensaje = null;
+            try
+            {
+                using var doc = JsonDocument.Parse(string.IsNullOrWhiteSpace(texto) ? "{}" : texto);
+                mensaje = LeerTexto(doc.RootElement, "message");
+            }
+            catch (JsonException) { }
+
+            var amigable = mensaje is not null && (mensaje.Contains("card token", StringComparison.OrdinalIgnoreCase)
+                                                   || mensaje.Contains("card_token", StringComparison.OrdinalIgnoreCase))
+                ? "No se pudo validar la tarjeta. Revisá los datos y probá de nuevo."
+                : "Mercado Pago no aceptó la tarjeta nueva. Revisá los datos o probá con otra tarjeta.";
+            return (false, amigable, $"HTTP {(int)response.StatusCode}: {texto}");
+        }
+        catch (Exception ex)
+        {
+            return (false, "No se pudo comunicar con Mercado Pago. Probá de nuevo en un momento.", ex.Message);
+        }
+    }
+
     internal static async Task<(bool Ok, string? Error)> ActualizarMontoAsync(
         string accessToken, string preapprovalId, decimal monto, string moneda)
     {

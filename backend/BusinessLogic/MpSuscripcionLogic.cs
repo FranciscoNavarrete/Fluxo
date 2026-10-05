@@ -2,6 +2,7 @@ using FluentValidation;
 using MercadoPago.Client.Preapproval;
 using MercadoPago.Config;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Models.DTOs;
 using Models.Entities;
 using Models.Helpers;
@@ -15,13 +16,16 @@ public class MpSuscripcionLogic : BaseLogic<MpSuscripcionDto>, IMpSuscripcionLog
     private readonly IValidator<CrearSuscripcionRedirectRequest> _redirectValidator;
     private readonly IValidator<CrearSuscripcionConTokenRequest> _tokenValidator;
     private readonly IConfiguration _config;
+    private readonly ILogger<MpSuscripcionLogic> _logger;
 
     public MpSuscripcionLogic(
         IUnitOfWork uow,
         IValidator<CrearSuscripcionRedirectRequest> redirectValidator,
         IValidator<CrearSuscripcionConTokenRequest> tokenValidator,
-        IConfiguration config) : base(uow)
+        IConfiguration config,
+        ILogger<MpSuscripcionLogic> logger) : base(uow)
     {
+        _logger = logger;
         _redirectValidator = redirectValidator;
         _tokenValidator = tokenValidator;
         _config = config;
@@ -272,6 +276,9 @@ public class MpSuscripcionLogic : BaseLogic<MpSuscripcionDto>, IMpSuscripcionLog
             Estado = suscripcion.Estado,
             MontoMensual = plan?.Monto ?? 0,
             Moneda = plan?.Moneda ?? "ARS",
+            // Solo las suscripciones creadas con tarjeta (sin link de pago) permiten cambiarla desde acá.
+            TarjetaEditable = string.IsNullOrEmpty(suscripcion.InitPoint) && suscripcion.Estado is not ("cancelled" or "pending"),
+            CobroRechazado = suscripcion.CobroRechazado,
             Cobros = ordenados
                 .Where(c => MpCobros.Clasificar(c) != MpCobros.Programado)
                 .OrderByDescending(c => c.Fecha ?? DateTime.MinValue)
@@ -392,28 +399,27 @@ public class MpSuscripcionLogic : BaseLogic<MpSuscripcionDto>, IMpSuscripcionLog
     public async Task<RespuestaResultado<bool>> ActualizarMedioPagoAsync(
         ActualizarMedioPagoRequest request, int usuarioId)
     {
+        if (string.IsNullOrWhiteSpace(request.CardTokenId))
+            return new RespuestaResultado<bool> { Exitoso = false, Mensaje = "Falta el token de la tarjeta." };
+
         var suscripcion = await _uow.MpSuscripcion.GetByIdAsync(request.MpSuscripcionId);
         if (suscripcion is null)
             return new RespuestaResultado<bool> { Exitoso = false, Mensaje = "Suscripción no encontrada." };
-
-        try
-        {
-            MercadoPagoConfig.AccessToken = _config["MercadoPago:AccessToken"];
-            // El SDK 2.4.x no expone CardTokenId/PaymentMethodId en PreapprovalUpdateRequest.
-            // Para actualizar la tarjeta redirigir al cliente al init_point de la suscripción.
-            var mpClient = new PreapprovalClient();
-            await mpClient.UpdateAsync(suscripcion.GatewaySuscripcionId, new PreapprovalUpdateRequest
-            {
-                Status = suscripcion.Estado
-            });
-        }
-        catch (Exception ex)
-        {
+        if (suscripcion.Estado is "cancelled" or "pending")
             return new RespuestaResultado<bool>
             {
                 Exitoso = false,
-                Mensaje = $"Error al actualizar en Mercado Pago: {ex.Message}"
+                Mensaje = "La suscripción no está activa: no se puede cambiar la tarjeta.",
             };
+
+        // El SDK 2.4.x no expone card_token_id en la actualización: se hace por la API REST.
+        var resultado = await MpPreapprovalApi.ActualizarTarjetaAsync(
+            _config["MercadoPago:AccessToken"] ?? string.Empty, suscripcion.GatewaySuscripcionId, request.CardTokenId.Trim());
+        if (!resultado.Ok)
+        {
+            _logger.LogWarning("No se pudo cambiar la tarjeta de la suscripción {Id}: {Error}",
+                suscripcion.MpSuscripcionId, resultado.ErrorOriginal);
+            return new RespuestaResultado<bool> { Exitoso = false, Mensaje = resultado.Error };
         }
 
         suscripcion.UsuarioUltActualizacionId = usuarioId;
@@ -421,7 +427,7 @@ public class MpSuscripcionLogic : BaseLogic<MpSuscripcionDto>, IMpSuscripcionLog
         await _uow.MpSuscripcion.UpdateAsync(suscripcion);
         await RegistrarAuditoria("MpSuscripciones", suscripcion.MpSuscripcionId, "UPDATE_PAYMENT_METHOD", usuarioId, null);
 
-        return new RespuestaResultado<bool> { Exitoso = true, Mensaje = "Medio de pago actualizado.", Contenido = true };
+        return new RespuestaResultado<bool> { Exitoso = true, Mensaje = "Tarjeta actualizada.", Contenido = true };
     }
 
     public async Task<RespuestaResultado<IEnumerable<MpTransaccionDto>>> ListarTransaccionesAsync(

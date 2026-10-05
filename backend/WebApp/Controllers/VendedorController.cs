@@ -45,6 +45,16 @@ public class VendedorController : BaseApiController
         return Ok(resultado);
     }
 
+    /// <summary>Cambia la tarjeta de una suscripción con un token generado en el navegador del cliente.</summary>
+    [HttpPut("suscripciones/{mpSuscripcionId:int}/tarjeta")]
+    public async Task<IActionResult> CambiarTarjeta(int mpSuscripcionId, [FromBody] CambiarTarjetaRequest request)
+    {
+        var usuarioSistemaId = await _authLogic.ObtenerOCrearUsuarioSistemaIdAsync();
+        var resultado = await _suscripcionLogic.ActualizarMedioPagoAsync(
+            new ActualizarMedioPagoRequest { MpSuscripcionId = mpSuscripcionId, CardTokenId = request.CardTokenId }, usuarioSistemaId);
+        return resultado.Exitoso ? Ok(resultado) : BadRequest(resultado);
+    }
+
     /// <summary>Historial de cobros de una suscripción (con motivo de los rechazos) y próximo cobro.</summary>
     [HttpGet("suscripciones/{mpSuscripcionId:int}/cobros")]
     public async Task<IActionResult> ObtenerCobros(int mpSuscripcionId)

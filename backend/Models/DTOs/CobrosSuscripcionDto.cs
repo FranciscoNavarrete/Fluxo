@@ -7,6 +7,10 @@ public class CobrosSuscripcionDto
     public string Estado { get; set; } = string.Empty;
     public decimal MontoMensual { get; set; }
     public string Moneda { get; set; } = "ARS";
+
+    /// <summary>La tarjeta se puede cambiar desde GestorPOS (la suscripción se creó con tarjeta, no con link).</summary>
+    public bool TarjetaEditable { get; set; }
+    public bool CobroRechazado { get; set; }
     public DateTime? ProximoCobro { get; set; }
     public decimal? ProximoMonto { get; set; }
     public List<CobroDto> Cobros { get; set; } = [];
