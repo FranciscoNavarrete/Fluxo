@@ -93,7 +93,7 @@ import { MpPlan } from '../../../shared/models';
 
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Monto *</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Monto {{ form.get('conPromo')?.value ? 'normal (después de la promo)' : '' }} *</label>
               <input type="number" formControlName="monto" placeholder="5000" min="0" class="fi" />
               <p *ngIf="form.get('monto')?.invalid && form.get('monto')?.touched"
                  class="text-xs text-red-600 dark:text-red-400 mt-1">Requerido, mayor a 0</p>
@@ -141,6 +141,25 @@ import { MpPlan } from '../../../shared/models';
             <p class="text-xs text-gray-400 dark:text-slate-500 mt-1">
               Ej: alta + primer mes. El primer cobro sale por este monto y después baja solo al monto mensual.
             </p>
+          </div>
+
+          <!-- Promoción: precio especial los primeros meses y después el normal (el monto de arriba) -->
+          <div class="rounded-lg border border-gray-200 dark:border-indigo-900/30 p-4 space-y-3">
+            <label class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-slate-300 cursor-pointer">
+              <input type="checkbox" formControlName="conPromo" />
+              Plan con promoción
+            </label>
+            <div *ngIf="form.get('conPromo')?.value" class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Precio promocional por mes *</label>
+                <input type="number" formControlName="montoPromo" placeholder="25000" min="1" class="fi" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Durante cuántos meses *</label>
+                <input type="number" formControlName="mesesPromo" placeholder="6" min="1" max="60" class="fi" />
+              </div>
+              <p class="col-span-2 text-xs text-gray-500 dark:text-slate-400">{{ resumenPromo() }}</p>
+            </div>
           </div>
 
           <div class="flex justify-end gap-3 pt-2 border-t border-gray-100 dark:border-indigo-900/20">
@@ -193,6 +212,12 @@ import { MpPlan } from '../../../shared/models';
                     <dt class="text-gray-400 dark:text-slate-500 text-xs">Primer cobro</dt>
                     <dd class="font-medium text-gray-700 dark:text-slate-300">
                       {{ plan.montoPrimerCobro | number:'1.0-2' }} {{ plan.moneda }}
+                    </dd>
+                  </div>
+                  <div *ngIf="plan.montoPromo && plan.mesesPromo">
+                    <dt class="text-gray-400 dark:text-slate-500 text-xs">Promoción</dt>
+                    <dd class="font-medium text-amber-600 dark:text-amber-400">
+                      {{ plan.montoPromo | number:'1.0-2' }} {{ plan.moneda }} x {{ plan.mesesPromo }} meses
                     </dd>
                   </div>
                   <div>
@@ -259,7 +284,24 @@ export class PlanesComponent implements OnInit {
     diasGratis:    [0],
     repeticiones:  [null as number | null],
     montoPrimerCobro: [null as number | null],
+    conPromo:      [false],
+    montoPromo:    [null as number | null],
+    mesesPromo:    [null as number | null],
   });
+
+  resumenPromo(): string {
+    const v = this.form.value;
+    if (!v.montoPromo || !v.mesesPromo || !v.monto) return 'Completá el precio y los meses de la promoción.';
+    const fmt = (n: number) => '$' + Math.round(n).toLocaleString('es-AR');
+    return `Del mes 1 al ${v.mesesPromo} paga ${fmt(Number(v.montoPromo))}. Desde el mes ${Number(v.mesesPromo) + 1} el cobro pasa solo a ${fmt(Number(v.monto))}.`;
+  }
+
+  private promoDelForm(): { montoPromo: number | null; mesesPromo: number | null } {
+    const v = this.form.value;
+    return v.conPromo
+      ? { montoPromo: Number(v.montoPromo), mesesPromo: Number(v.mesesPromo) }
+      : { montoPromo: null, mesesPromo: null };
+  }
 
   ngOnInit(): void {
     this.cargar();
@@ -267,7 +309,7 @@ export class PlanesComponent implements OnInit {
 
   abrirFormulario(): void {
     this.planEditando.set(null);
-    this.form.reset({ moneda: 'ARS', tipoFrecuencia: 'months', frecuencia: 1, diasGratis: 0, repeticiones: null, montoPrimerCobro: null });
+    this.form.reset({ moneda: 'ARS', tipoFrecuencia: 'months', frecuencia: 1, diasGratis: 0, repeticiones: null, montoPrimerCobro: null, conPromo: false });
     this.errorForm.set('');
     this.mostrarFormulario.set(true);
     setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
@@ -285,6 +327,9 @@ export class PlanesComponent implements OnInit {
       diasGratis:     plan.diasGratis,
       repeticiones:   plan.repeticiones ?? null,
       montoPrimerCobro: plan.montoPrimerCobro ?? null,
+      conPromo:       !!(plan.montoPromo && plan.mesesPromo),
+      montoPromo:     plan.montoPromo ?? null,
+      mesesPromo:     plan.mesesPromo ?? null,
     });
     this.errorForm.set('');
     this.mostrarFormulario.set(true);
@@ -299,6 +344,10 @@ export class PlanesComponent implements OnInit {
 
   guardar(): void {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+    if (this.form.value.conPromo && (!this.form.value.montoPromo || !this.form.value.mesesPromo)) {
+      this.errorForm.set('Para una promoción indicá el precio promocional y por cuántos meses.');
+      return;
+    }
     this.errorForm.set('');
     this.guardando.set(true);
     const v = this.form.value;
@@ -316,6 +365,7 @@ export class PlanesComponent implements OnInit {
         diasGratis:    Number(v.diasGratis ?? 0),
         repeticiones:  v.repeticiones ? Number(v.repeticiones) : null,
         montoPrimerCobro: v.montoPrimerCobro ? Number(v.montoPrimerCobro) : null,
+        ...this.promoDelForm(),
         activo:        editando.activo,
       }).subscribe({
         next: plan => {
@@ -337,6 +387,7 @@ export class PlanesComponent implements OnInit {
         diasGratis:    Number(v.diasGratis ?? 0),
         repeticiones:  v.repeticiones ? Number(v.repeticiones) : null,
         montoPrimerCobro: v.montoPrimerCobro ? Number(v.montoPrimerCobro) : null,
+        ...this.promoDelForm(),
       }).subscribe({
         next: plan => {
           this.planes.update(lista => [plan, ...lista]);

@@ -58,6 +58,10 @@ export class SuscripcionService {
       tipoFrecuencia: plan.tipoFrecuencia,
       frecuencia:    plan.frecuencia,
       diasGratis:    plan.diasGratis,
+      repeticiones:  plan.repeticiones,
+      montoPrimerCobro: plan.montoPrimerCobro,
+      montoPromo:    plan.montoPromo,
+      mesesPromo:    plan.mesesPromo,
       activo,
     };
     return this.api.put<MpPlan>('mp/planes', req);

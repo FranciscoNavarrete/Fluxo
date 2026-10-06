@@ -19,6 +19,9 @@ export interface MpPlan {
   diasGratis: number;
   repeticiones?: number | null;
   montoPrimerCobro?: number | null;
+  /** Promoción: precio por mes durante los primeros mesesPromo meses; después rige monto. */
+  montoPromo?: number | null;
+  mesesPromo?: number | null;
   mpPlanExternoId?: string;
   activo: boolean;
   fechaHoraCreacion: string;
@@ -34,6 +37,9 @@ export interface CrearPlanRequest {
   diasGratis: number;
   repeticiones?: number | null;
   montoPrimerCobro?: number | null;
+  /** Promoción: precio por mes durante los primeros mesesPromo meses; después rige monto. */
+  montoPromo?: number | null;
+  mesesPromo?: number | null;
 }
 
 export interface EditarPlanRequest {
@@ -47,6 +53,9 @@ export interface EditarPlanRequest {
   diasGratis: number;
   repeticiones?: number | null;
   montoPrimerCobro?: number | null;
+  /** Promoción: precio por mes durante los primeros mesesPromo meses; después rige monto. */
+  montoPromo?: number | null;
+  mesesPromo?: number | null;
   activo: boolean;
 }
 
