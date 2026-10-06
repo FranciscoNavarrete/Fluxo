@@ -11,5 +11,7 @@ public class CrearClienteAdminRequest
     /// <summary>El primer pago (alta + primer mes) se cobró por fuera de Mercado Pago (efectivo o transferencia):
     /// la suscripción cobra solo el monto mensual y recién un período después.</summary>
     public bool PrimerPagoManual { get; set; }
+    /// <summary>Suscripción nueva para un negocio que ya existía: el primer cobro es solo el abono, sin el alta.</summary>
+    public bool SinAlta { get; set; }
     public string? CardTokenId { get; set; }   // si se envía, la suscripción se crea autorizada con esa tarjeta (sin link de pago)
 }

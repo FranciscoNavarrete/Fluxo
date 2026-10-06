@@ -18,13 +18,13 @@ public static class CobroInicialHelper
     /// suscripción nueva es el del alta (MontoInicial); después rige el precio del mes que toque.</summary>
     public static decimal MontoEsperado(Models.Entities.MpPlan plan, Models.Entities.MpSuscripcion suscripcion, int cobrosRealizados)
     {
-        if (suscripcion.CobrosBase == 0 && cobrosRealizados == 0) return MontoInicial(plan);
+        if (suscripcion.CobrosBase == 0 && cobrosRealizados == 0 && !suscripcion.SinAlta) return MontoInicial(plan);
         return MontoDelMes(plan, MesDelProximoCobro(suscripcion, cobrosRealizados));
     }
 
     /// <summary>Con el primer pago hecho a mano, la suscripción arranca en el mes 2 del plan (no cobra el inicial).</summary>
-    public static decimal MontoDeSuscripcion(Models.Entities.MpPlan plan, bool primerPagoManual) =>
-        primerPagoManual ? MontoDelMes(plan, 2) : MontoInicial(plan);
+    public static decimal MontoDeSuscripcion(Models.Entities.MpPlan plan, bool primerPagoManual, bool sinAlta = false) =>
+        primerPagoManual ? MontoDelMes(plan, 2) : sinAlta ? MontoDelMes(plan, 1) : MontoInicial(plan);
 
     /// <summary>La promoción en curso de la suscripción, o null si el plan no tiene o ya terminó.</summary>
     public static Models.DTOs.PromoDto? InfoPromo(

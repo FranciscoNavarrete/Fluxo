@@ -49,6 +49,9 @@ public class MpSuscripcion
     // El primer pago se hizo por fuera de MP: la suscripción cobra solo el monto mensual, un período después del alta.
     public bool PrimerPagoManual { get; set; }
 
+    // Suscripción nueva de un negocio que ya existía: no lleva el alta, el primer cobro es el abono del mes 1.
+    public bool SinAlta { get; set; }
+
     // Cobros que ya tenía la suscripción cuando empezó a regir su plan actual (-1 si el primer mes se pagó a mano).
     // Con CobrosRealizados da el mes del plan en que está: sirve para saber cuánto toca cobrar con una promoción.
     public int CobrosBase { get; set; }

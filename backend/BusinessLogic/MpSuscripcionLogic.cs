@@ -229,7 +229,7 @@ public class MpSuscripcionLogic : BaseLogic<MpSuscripcionDto>, IMpSuscripcionLog
             // Con el ajuste pendiente (o sin primer cobro todavía) lo próximo es el monto inicial del plan.
             var proximo = plan is null
                 ? 0
-                : s.CobrosBase == 0 && !s.PrimerPagoManual && (s.AjusteMontoPendiente || !s.UltimoCobro.HasValue)
+                : s.CobrosBase == 0 && !s.PrimerPagoManual && !s.SinAlta && (s.AjusteMontoPendiente || !s.UltimoCobro.HasValue)
                     ? CobroInicialHelper.MontoInicial(plan)
                     : CobroInicialHelper.MontoEsperado(plan, s, s.CobrosRealizados);
             return new EstadoSuscripcionDto
@@ -304,7 +304,7 @@ public class MpSuscripcionLogic : BaseLogic<MpSuscripcionDto>, IMpSuscripcionLog
                     Motivo = MpCobros.Motivo(c),
                     Intento = c.Intento,
                     ProximoReintento = c.ProximoReintento,
-                    EsPrimerCobro = !suscripcion.PrimerPagoManual && ReferenceEquals(c, primero),
+                    EsPrimerCobro = !suscripcion.PrimerPagoManual && !suscripcion.SinAlta && ReferenceEquals(c, primero),
                 })
                 .ToList(),
         };
