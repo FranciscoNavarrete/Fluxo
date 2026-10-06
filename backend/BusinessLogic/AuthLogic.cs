@@ -157,6 +157,7 @@ public class AuthLogic : IAuthLogic
 
         if (planTarjeta is not null)
         {
+            var inicioTarjeta = CobroInicialHelper.PrimerCobro(planTarjeta, DateTime.UtcNow, request.PrimerPagoManual);
             var tarjeta = await MpPreapprovalConTarjeta.CrearAsync(
                 _config["MercadoPago:AccessToken"] ?? string.Empty,
                 new MpPreapprovalConTarjeta.Datos(
@@ -167,9 +168,9 @@ public class AuthLogic : IAuthLogic
                     BackUrl:           _config["MercadoPago:BackUrl"] ?? string.Empty,
                     Frequency:         planTarjeta.Frecuencia,
                     FrequencyType:     planTarjeta.TipoFrecuencia,
-                    TransactionAmount: CobroInicialHelper.MontoInicial(planTarjeta),
+                    TransactionAmount: CobroInicialHelper.MontoDeSuscripcion(planTarjeta, request.PrimerPagoManual),
                     CurrencyId:        planTarjeta.Moneda,
-                    StartDateUtc:      FechaCobroHelper.PrimerCobro(DateTime.UtcNow, planTarjeta.DiasGratis),
+                    StartDateUtc:      inicioTarjeta,
                     EndDateUtc:        planTarjeta.Repeticiones.HasValue ? null : DateTime.UtcNow.AddYears(10),
                     Repeticiones:      planTarjeta.Repeticiones));
 
@@ -194,8 +195,9 @@ public class AuthLogic : IAuthLogic
                 Estado               = tarjeta.Estado ?? "authorized",
                 FechaInicio          = ahoraTarjeta,
                 DiaCobro             = request.DiaCobro,
-                ProximoCobro         = FechaCobroHelper.PrimerCobro(ahoraTarjeta, planTarjeta.DiasGratis),
-                AjusteMontoPendiente = CobroInicialHelper.RequiereAjuste(planTarjeta),
+                ProximoCobro         = inicioTarjeta,
+                AjusteMontoPendiente = !request.PrimerPagoManual && CobroInicialHelper.RequiereAjuste(planTarjeta),
+                PrimerPagoManual     = request.PrimerPagoManual,
                 IntentosReintento    = 0,
                 MaxReintentos        = 3,
                 ConsentimientoFecha  = ahoraTarjeta,
@@ -228,6 +230,7 @@ public class AuthLogic : IAuthLogic
             {
                 try
                 {
+                    var inicioLink = CobroInicialHelper.PrimerCobro(plan, DateTime.UtcNow, request.PrimerPagoManual);
                     var mpResponse = await MpPreapprovalConTarjeta.CrearAsync(
                         _config["MercadoPago:AccessToken"] ?? string.Empty,
                         new MpPreapprovalConTarjeta.Datos(
@@ -238,9 +241,9 @@ public class AuthLogic : IAuthLogic
                             BackUrl:           _config["MercadoPago:BackUrl"] ?? string.Empty,
                             Frequency:         plan.Frecuencia,
                             FrequencyType:     plan.TipoFrecuencia,
-                            TransactionAmount: CobroInicialHelper.MontoInicial(plan),
+                            TransactionAmount: CobroInicialHelper.MontoDeSuscripcion(plan, request.PrimerPagoManual),
                             CurrencyId:        plan.Moneda,
-                            StartDateUtc:      FechaCobroHelper.PrimerCobro(DateTime.UtcNow, plan.DiasGratis),
+                            StartDateUtc:      inicioLink,
                             EndDateUtc:        plan.Repeticiones.HasValue ? null : DateTime.UtcNow.AddYears(10),
                             Repeticiones:      plan.Repeticiones,
                             Status:            "pending"));
@@ -257,8 +260,9 @@ public class AuthLogic : IAuthLogic
                             Estado                   = "pending",
                             FechaInicio              = ahora,
                             DiaCobro                 = request.DiaCobro,
-                            ProximoCobro             = FechaCobroHelper.PrimerCobro(ahora, plan.DiasGratis),
-                            AjusteMontoPendiente     = CobroInicialHelper.RequiereAjuste(plan),
+                            ProximoCobro             = inicioLink,
+                            AjusteMontoPendiente     = !request.PrimerPagoManual && CobroInicialHelper.RequiereAjuste(plan),
+                            PrimerPagoManual         = request.PrimerPagoManual,
                             IntentosReintento        = 0,
                             MaxReintentos            = 3,
                             InitPoint                = mpResponse.InitPoint,

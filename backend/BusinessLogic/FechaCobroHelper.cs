@@ -2,6 +2,16 @@ namespace BusinessLogic;
 
 public static class CobroInicialHelper
 {
+    /// <summary>Con el primer pago hecho a mano, la suscripción cobra el monto mensual (no el inicial).</summary>
+    public static decimal MontoDeSuscripcion(Models.Entities.MpPlan plan, bool primerPagoManual) =>
+        primerPagoManual ? plan.Monto : MontoInicial(plan);
+
+    /// <summary>Con el primer pago hecho a mano, el primer cobro de la suscripción llega un período después del alta.</summary>
+    public static DateTime PrimerCobro(Models.Entities.MpPlan plan, DateTime desde, bool primerPagoManual) =>
+        primerPagoManual
+            ? FechaCobroHelper.Calcular(desde, plan.Frecuencia, plan.TipoFrecuencia, null)
+            : FechaCobroHelper.PrimerCobro(desde, plan.DiasGratis);
+
     /// <summary>Monto con el que se crea la suscripción en MP: el del primer cobro si el plan lo define.</summary>
     public static decimal MontoInicial(Models.Entities.MpPlan plan) => plan.MontoPrimerCobro ?? plan.Monto;
 

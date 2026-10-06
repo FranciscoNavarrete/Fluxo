@@ -227,7 +227,10 @@ public class MpSuscripcionLogic : BaseLogic<MpSuscripcionDto>, IMpSuscripcionLog
             var plan = planes.GetValueOrDefault(s.MpPlanId);
             var mensual = plan?.Monto ?? 0;
             // Con el ajuste pendiente (o sin primer cobro todavía) lo próximo es el monto inicial del plan.
-            var proximo = plan is null ? 0 : (s.AjusteMontoPendiente || !s.UltimoCobro.HasValue ? CobroInicialHelper.MontoInicial(plan) : mensual);
+            var proximo = plan is null
+                ? 0
+                : s.PrimerPagoManual ? mensual
+                : (s.AjusteMontoPendiente || !s.UltimoCobro.HasValue ? CobroInicialHelper.MontoInicial(plan) : mensual);
             return new EstadoSuscripcionDto
             {
                 MpSuscripcionId = s.MpSuscripcionId,
@@ -290,7 +293,7 @@ public class MpSuscripcionLogic : BaseLogic<MpSuscripcionDto>, IMpSuscripcionLog
                     Motivo = MpCobros.Motivo(c),
                     Intento = c.Intento,
                     ProximoReintento = c.ProximoReintento,
-                    EsPrimerCobro = ReferenceEquals(c, primero),
+                    EsPrimerCobro = !suscripcion.PrimerPagoManual && ReferenceEquals(c, primero),
                 })
                 .ToList(),
         };

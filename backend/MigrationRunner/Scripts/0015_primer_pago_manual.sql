@@ -1,0 +1,2 @@
+ALTER TABLE mpsuscripciones
+ADD COLUMN IF NOT EXISTS primerpagomanual BOOLEAN NOT NULL DEFAULT FALSE;

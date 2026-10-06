@@ -46,6 +46,9 @@ public class MpSuscripcion
     // que bajar el monto al mensual del plan.
     public bool AjusteMontoPendiente { get; set; }
 
+    // El primer pago se hizo por fuera de MP: la suscripción cobra solo el monto mensual, un período después del alta.
+    public bool PrimerPagoManual { get; set; }
+
     // El último cobro (alta o mensual) fue rechazado. Lo actualiza el sync de fondo.
     public bool CobroRechazado { get; set; }
     public string? MotivoRechazo { get; set; }
