@@ -121,6 +121,15 @@ public class MpSuscripcionRepository : IMpSuscripcionRepository
         return await _db.QueryAsync<MpSuscripcion>(sql, new { Maximo = maximo });
     }
 
+    public async Task<int> ContarNoCanceladasPorPlanAsync(int mpPlanId)
+    {
+        const string sql = """
+            SELECT COUNT(*) FROM MpSuscripciones
+            WHERE MpPlanId = @MpPlanId AND Estado <> 'cancelled'
+            """;
+        return await _db.ExecuteScalarAsync<int>(sql, new { MpPlanId = mpPlanId });
+    }
+
     public async Task<MpSuscripcion?> ObtenerActivaPorClienteAsync(int clienteId)
     {
         const string sql = """

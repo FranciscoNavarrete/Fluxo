@@ -13,6 +13,12 @@ public class CobrosSuscripcionDto
     public bool CobroRechazado { get; set; }
     public DateTime? ProximoCobro { get; set; }
     public decimal? ProximoMonto { get; set; }
+    public int MpPlanId { get; set; }
+    public string? PlanNombre { get; set; }
+
+    /// <summary>Precio normal del plan (distinto de MontoMensual mientras dure una promoción).</summary>
+    public decimal MontoNormal { get; set; }
+    public PromoDto? Promo { get; set; }
     public List<CobroDto> Cobros { get; set; } = [];
 }
 

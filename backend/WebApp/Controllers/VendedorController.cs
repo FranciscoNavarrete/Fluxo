@@ -55,6 +55,15 @@ public class VendedorController : BaseApiController
         return resultado.Exitoso ? Ok(resultado) : BadRequest(resultado);
     }
 
+    /// <summary>Cambia el plan de una suscripción activa (rige desde el próximo cobro).</summary>
+    [HttpPut("suscripciones/{mpSuscripcionId:int}/plan")]
+    public async Task<IActionResult> CambiarPlan(int mpSuscripcionId, [FromBody] CambiarPlanRequest request)
+    {
+        var usuarioSistemaId = await _authLogic.ObtenerOCrearUsuarioSistemaIdAsync();
+        var resultado = await _suscripcionLogic.CambiarPlanAsync(mpSuscripcionId, request, usuarioSistemaId);
+        return resultado.Exitoso ? Ok(resultado) : BadRequest(resultado);
+    }
+
     /// <summary>Historial de cobros de una suscripción (con motivo de los rechazos) y próximo cobro.</summary>
     [HttpGet("suscripciones/{mpSuscripcionId:int}/cobros")]
     public async Task<IActionResult> ObtenerCobros(int mpSuscripcionId)

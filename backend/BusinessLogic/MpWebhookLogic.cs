@@ -136,31 +136,40 @@ public class MpWebhookLogic : IMpWebhookLogic
                 }
             }
 
-            // Primer cobro aprobado: bajar el monto al mensual del plan.
-            if (suscripcion.AjusteMontoPendiente && datos.CobrosRealizados >= 1)
+            if (datos.CobrosRealizados != suscripcion.CobrosRealizados)
             {
-                var plan = await _uow.MpPlan.GetByIdAsync(suscripcion.MpPlanId);
-                if (plan is not null)
+                suscripcion.CobrosRealizados = datos.CobrosRealizados;
+                cambios = true;
+            }
+
+            // El monto de MP tiene que ser el que toca para el próximo cobro: tras el primer cobro baja del inicial al
+            // mensual, y en un plan con promoción sube al precio normal cuando termina. Solo se toca si hay algo
+            // pendiente (ajuste del primer cobro) o el plan tiene promoción; nunca el monto de una suscripción común.
+            var plan = await _uow.MpPlan.GetByIdAsync(suscripcion.MpPlanId);
+            if (plan is not null && (suscripcion.AjusteMontoPendiente || CobroInicialHelper.TienePromo(plan)))
+            {
+                var esperado = CobroInicialHelper.MontoEsperado(plan, suscripcion, datos.CobrosRealizados);
+                if (datos.Monto == esperado)
                 {
-                    if (datos.Monto == plan.Monto)
+                    if (suscripcion.AjusteMontoPendiente && datos.CobrosRealizados >= 1)
                     {
                         suscripcion.AjusteMontoPendiente = false;
                         cambios = true;
                     }
+                }
+                else
+                {
+                    var ajuste = await MpPreapprovalApi.ActualizarMontoAsync(token, gatewaySuscripcionId, esperado, plan.Moneda);
+                    if (ajuste.Ok)
+                    {
+                        if (suscripcion.AjusteMontoPendiente && datos.CobrosRealizados >= 1) suscripcion.AjusteMontoPendiente = false;
+                        cambios = true;
+                        _logger.LogInformation("Suscripción {Id}: monto actualizado a {Monto} para el próximo cobro.", suscripcion.MpSuscripcionId, esperado);
+                    }
                     else
                     {
-                        var ajuste = await MpPreapprovalApi.ActualizarMontoAsync(token, gatewaySuscripcionId, plan.Monto, plan.Moneda);
-                        if (ajuste.Ok)
-                        {
-                            suscripcion.AjusteMontoPendiente = false;
-                            cambios = true;
-                            _logger.LogInformation("Suscripción {Id}: monto bajado a {Monto} tras el primer cobro.", suscripcion.MpSuscripcionId, plan.Monto);
-                        }
-                        else
-                        {
-                            _logger.LogError("Suscripción {Id}: no se pudo bajar el monto a {Monto}: {Error}. Se reintenta.",
-                                suscripcion.MpSuscripcionId, plan.Monto, ajuste.Error);
-                        }
+                        _logger.LogError("Suscripción {Id}: no se pudo actualizar el monto a {Monto}: {Error}. Se reintenta.",
+                            suscripcion.MpSuscripcionId, esperado, ajuste.Error);
                     }
                 }
             }

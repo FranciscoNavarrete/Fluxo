@@ -225,12 +225,13 @@ public class MpSuscripcionLogic : BaseLogic<MpSuscripcionDto>, IMpSuscripcionLog
         var estados = suscripciones.Select(s =>
         {
             var plan = planes.GetValueOrDefault(s.MpPlanId);
-            var mensual = plan?.Monto ?? 0;
+            var mensual = plan is null ? 0 : CobroInicialHelper.MontoDelMes(plan, CobroInicialHelper.MesDelProximoCobro(s, s.CobrosRealizados));
             // Con el ajuste pendiente (o sin primer cobro todavía) lo próximo es el monto inicial del plan.
             var proximo = plan is null
                 ? 0
-                : s.PrimerPagoManual ? mensual
-                : (s.AjusteMontoPendiente || !s.UltimoCobro.HasValue ? CobroInicialHelper.MontoInicial(plan) : mensual);
+                : s.CobrosBase == 0 && !s.PrimerPagoManual && (s.AjusteMontoPendiente || !s.UltimoCobro.HasValue)
+                    ? CobroInicialHelper.MontoInicial(plan)
+                    : CobroInicialHelper.MontoEsperado(plan, s, s.CobrosRealizados);
             return new EstadoSuscripcionDto
             {
                 MpSuscripcionId = s.MpSuscripcionId,
@@ -246,6 +247,9 @@ public class MpSuscripcionLogic : BaseLogic<MpSuscripcionDto>, IMpSuscripcionLog
                 ProximoCobro = s.ProximoCobro,
                 FechaInicio = s.FechaInicio,
                 FechaCancelacion = s.FechaCancelacion,
+                MpPlanId = s.MpPlanId,
+                PlanNombre = plan?.Nombre,
+                Promo = plan is null ? null : CobroInicialHelper.InfoPromo(plan, s, s.CobrosRealizados, s.ProximoCobro),
             };
         }).ToList();
         return new RespuestaResultado<IEnumerable<EstadoSuscripcionDto>> { Exitoso = true, Contenido = estados };
@@ -273,11 +277,18 @@ public class MpSuscripcionLogic : BaseLogic<MpSuscripcionDto>, IMpSuscripcionLog
         var ordenados = cobrosMp.Cobros.OrderBy(c => c.Fecha ?? DateTime.MaxValue).ToList();
         var primero = ordenados.FirstOrDefault(c => MpCobros.Clasificar(c) != MpCobros.Programado);
 
+        var cobrosRealizados = consulta.Ok && consulta.Datos is not null ? consulta.Datos.CobrosRealizados : suscripcion.CobrosRealizados;
+        var proximoCobroInfo = consulta.Ok && consulta.Datos?.ProximoCobroUtc is { } p ? p : suscripcion.ProximoCobro;
+
         var dto = new CobrosSuscripcionDto
         {
             MpSuscripcionId = suscripcion.MpSuscripcionId,
             Estado = suscripcion.Estado,
-            MontoMensual = plan?.Monto ?? 0,
+            MontoMensual = plan is null ? 0 : CobroInicialHelper.MontoDelMes(plan, CobroInicialHelper.MesDelProximoCobro(suscripcion, cobrosRealizados)),
+            MpPlanId = suscripcion.MpPlanId,
+            PlanNombre = plan?.Nombre,
+            MontoNormal = plan?.Monto ?? 0,
+            Promo = plan is null ? null : CobroInicialHelper.InfoPromo(plan, suscripcion, cobrosRealizados, proximoCobroInfo),
             Moneda = plan?.Moneda ?? "ARS",
             // Solo las suscripciones creadas con tarjeta (sin link de pago) permiten cambiarla desde acá.
             TarjetaEditable = string.IsNullOrEmpty(suscripcion.InitPoint) && suscripcion.Estado is not ("cancelled" or "pending"),
@@ -397,6 +408,62 @@ public class MpSuscripcionLogic : BaseLogic<MpSuscripcionDto>, IMpSuscripcionLog
         }
 
         return new RespuestaResultado<bool> { Exitoso = true, Mensaje = "Suscripción cancelada.", Contenido = true };
+    }
+
+    public async Task<RespuestaResultado<bool>> CambiarPlanAsync(int mpSuscripcionId, CambiarPlanRequest request, int usuarioId)
+    {
+        var suscripcion = await _uow.MpSuscripcion.GetByIdAsync(mpSuscripcionId);
+        if (suscripcion is null)
+            return new RespuestaResultado<bool> { Exitoso = false, Mensaje = "Suscripción no encontrada." };
+        if (suscripcion.Estado != "authorized")
+            return new RespuestaResultado<bool> { Exitoso = false, Mensaje = "Solo se puede cambiar el plan de una suscripción activa." };
+        if (suscripcion.MpPlanId == request.MpPlanId)
+            return new RespuestaResultado<bool> { Exitoso = false, Mensaje = "El negocio ya tiene ese plan." };
+
+        var actual = await _uow.MpPlan.GetByIdAsync(suscripcion.MpPlanId);
+        var nuevo = await _uow.MpPlan.GetByIdAsync(request.MpPlanId);
+        if (nuevo is null || !nuevo.Activo)
+            return new RespuestaResultado<bool> { Exitoso = false, Mensaje = "El plan elegido no existe o no está activo." };
+        if (actual is not null && (nuevo.Moneda != actual.Moneda || nuevo.Frecuencia != actual.Frecuencia || nuevo.TipoFrecuencia != actual.TipoFrecuencia))
+            return new RespuestaResultado<bool>
+            {
+                Exitoso = false,
+                Mensaje = "Solo se puede cambiar a un plan con la misma moneda y frecuencia de cobro.",
+            };
+
+        var token = _config["MercadoPago:AccessToken"] ?? string.Empty;
+        var consulta = await MpPreapprovalApi.ObtenerAsync(token, suscripcion.GatewaySuscripcionId);
+        if (!consulta.Ok || consulta.Datos is null)
+            return new RespuestaResultado<bool> { Exitoso = false, Mensaje = "No se pudo consultar la suscripción en Mercado Pago. Probá de nuevo en un momento." };
+
+        // Hasta que no hubo un primer cobro no hay de dónde contar los meses del plan nuevo.
+        var cobros = consulta.Datos.CobrosRealizados;
+        if (cobros < 1)
+            return new RespuestaResultado<bool> { Exitoso = false, Mensaje = "Todavía no se cobró nada a este negocio: el plan se puede cambiar después de su primer cobro." };
+
+        // El plan nuevo empieza a contar desde ahora: su mes 1 es el próximo cobro (sin alta).
+        suscripcion.CobrosBase = cobros;
+        suscripcion.CobrosRealizados = cobros;
+        var esperado = CobroInicialHelper.MontoEsperado(nuevo, suscripcion, cobros);
+
+        if (consulta.Datos.Monto != esperado)
+        {
+            var ajuste = await MpPreapprovalApi.ActualizarMontoAsync(token, suscripcion.GatewaySuscripcionId, esperado, nuevo.Moneda);
+            if (!ajuste.Ok)
+            {
+                _logger.LogWarning("No se pudo cambiar el monto de la suscripción {Id} al cambiar de plan: {Error}", suscripcion.MpSuscripcionId, ajuste.Error);
+                return new RespuestaResultado<bool> { Exitoso = false, Mensaje = "Mercado Pago no pudo actualizar el monto. Probá de nuevo en un momento." };
+            }
+        }
+
+        suscripcion.MpPlanId = nuevo.MpPlanId;
+        suscripcion.AjusteMontoPendiente = false;
+        suscripcion.UsuarioUltActualizacionId = usuarioId;
+        suscripcion.FechaHoraUltActualizacion = DateTime.UtcNow;
+        await _uow.MpSuscripcion.UpdateAsync(suscripcion);
+        await RegistrarAuditoria("MpSuscripciones", suscripcion.MpSuscripcionId, "CAMBIO_PLAN", usuarioId, null);
+
+        return new RespuestaResultado<bool> { Exitoso = true, Mensaje = "Plan cambiado.", Contenido = true };
     }
 
     public async Task<RespuestaResultado<bool>> ActualizarMedioPagoAsync(

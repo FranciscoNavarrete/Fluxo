@@ -49,6 +49,11 @@ public class MpSuscripcion
     // El primer pago se hizo por fuera de MP: la suscripción cobra solo el monto mensual, un período después del alta.
     public bool PrimerPagoManual { get; set; }
 
+    // Cobros que ya tenía la suscripción cuando empezó a regir su plan actual (-1 si el primer mes se pagó a mano).
+    // Con CobrosRealizados da el mes del plan en que está: sirve para saber cuánto toca cobrar con una promoción.
+    public int CobrosBase { get; set; }
+    public int CobrosRealizados { get; set; }
+
     // El último cobro (alta o mensual) fue rechazado. Lo actualiza el sync de fondo.
     public bool CobroRechazado { get; set; }
     public string? MotivoRechazo { get; set; }

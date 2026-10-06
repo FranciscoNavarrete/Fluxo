@@ -25,6 +25,19 @@ public class CrearPlanValidator : AbstractValidator<CrearPlanRequest>
             .GreaterThan(0).WithMessage("El monto del primer cobro debe ser mayor a cero.")
             .When(x => x.MontoPrimerCobro.HasValue);
 
+        RuleFor(x => x.MontoPromo)
+            .GreaterThan(0).WithMessage("El precio promocional debe ser mayor a cero.")
+            .When(x => x.MontoPromo.HasValue);
+
+        RuleFor(x => x.MesesPromo)
+            .GreaterThan(0).WithMessage("Los meses de promoción deben ser al menos 1.")
+            .LessThanOrEqualTo(60).WithMessage("Los meses de promoción no pueden superar 60.")
+            .When(x => x.MesesPromo.HasValue);
+
+        RuleFor(x => x)
+            .Must(x => x.MontoPromo.HasValue == x.MesesPromo.HasValue)
+            .WithMessage("Para una promoción hay que indicar el precio promocional y por cuántos meses.");
+
         RuleFor(x => x.Moneda)
             .NotEmpty().WithMessage("La moneda es obligatoria.")
             .Must(m => _monedasValidas.Contains(m.ToUpper()))

@@ -16,4 +16,5 @@ public interface IMpSuscripcionRepository : IRepository<MpSuscripcion>
     Task<IEnumerable<MpSuscripcion>> ObtenerPendientesParaSincronizarAsync(DateTime creadasDesdeUtc, int maximo);
     Task<IEnumerable<MpSuscripcion>> ObtenerAutorizadasParaSincronizarCobrosAsync(DateTime creadasDesdeUtc, int maximo);
     Task<IEnumerable<MpSuscripcion>> ObtenerAutorizadasEnVentanaDeCobroAsync(int maximo);
+    Task<int> ContarNoCanceladasPorPlanAsync(int mpPlanId);
 }

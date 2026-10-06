@@ -30,4 +30,10 @@ public class EstadoSuscripcionDto
     public DateTime? ProximoCobro { get; set; }
     public DateTime FechaInicio { get; set; }
     public DateTime? FechaCancelacion { get; set; }
+
+    public int MpPlanId { get; set; }
+    public string? PlanNombre { get; set; }
+
+    /// <summary>La promoción en curso (null si el plan no tiene o ya terminó). En ese caso MontoMensual es el precio promocional.</summary>
+    public PromoDto? Promo { get; set; }
 }

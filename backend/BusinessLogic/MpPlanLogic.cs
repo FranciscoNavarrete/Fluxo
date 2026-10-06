@@ -43,6 +43,8 @@ public class MpPlanLogic : BaseLogic<MpPlanDto>, IMpPlanLogic
             DiasGratis = request.DiasGratis,
             Repeticiones = request.Repeticiones,
             MontoPrimerCobro = request.MontoPrimerCobro,
+            MontoPromo = request.MontoPromo,
+            MesesPromo = request.MesesPromo,
             MpPlanExternoId = null,
             Activo = true,
             UsuarioCreacionId = usuarioId,
@@ -63,6 +65,19 @@ public class MpPlanLogic : BaseLogic<MpPlanDto>, IMpPlanLogic
         if (plan is null)
             return RespuestaError("Plan no encontrado.");
 
+        if (request.MontoPromo.HasValue != request.MesesPromo.HasValue)
+            return RespuestaError("Para una promoción hay que indicar el precio promocional y por cuántos meses.");
+        if (request.MontoPromo <= 0 || request.MesesPromo <= 0)
+            return RespuestaError("El precio y los meses de la promoción deben ser mayores a cero.");
+
+        // Cambiar el precio o la promoción de un plan que ya tiene suscripciones les cambiaría lo que pagan sin que
+        // nadie lo decida: para eso se crea un plan nuevo y se le cambia el plan a cada negocio.
+        var cambiaPrecios = request.Monto != plan.Monto || request.MontoPromo != plan.MontoPromo || request.MesesPromo != plan.MesesPromo
+            || request.MontoPrimerCobro != plan.MontoPrimerCobro;
+        if (cambiaPrecios && (CobroInicialHelper.TienePromo(plan) || request.MontoPromo.HasValue)
+            && await _uow.MpSuscripcion.ContarNoCanceladasPorPlanAsync(plan.MpPlanId) > 0)
+            return RespuestaError("Este plan ya tiene suscripciones: no se pueden cambiar sus precios ni su promoción. Creá un plan nuevo y cambiale el plan al negocio.");
+
         plan.Nombre = request.Nombre;
         plan.Descripcion = request.Descripcion;
         plan.Monto = request.Monto;
@@ -72,6 +87,8 @@ public class MpPlanLogic : BaseLogic<MpPlanDto>, IMpPlanLogic
         plan.DiasGratis = request.DiasGratis;
         plan.Repeticiones = request.Repeticiones;
         plan.MontoPrimerCobro = request.MontoPrimerCobro;
+        plan.MontoPromo = request.MontoPromo;
+        plan.MesesPromo = request.MesesPromo;
         plan.Activo = request.Activo;
         plan.UsuarioUltActualizacionId = usuarioId;
         plan.FechaHoraUltActualizacion = DateTime.UtcNow;
@@ -125,6 +142,8 @@ public class MpPlanLogic : BaseLogic<MpPlanDto>, IMpPlanLogic
         DiasGratis = p.DiasGratis,
         Repeticiones = p.Repeticiones,
         MontoPrimerCobro = p.MontoPrimerCobro,
+        MontoPromo = p.MontoPromo,
+        MesesPromo = p.MesesPromo,
         MpPlanExternoId = p.MpPlanExternoId,
         Activo = p.Activo,
         FechaHoraCreacion = p.FechaHoraCreacion,

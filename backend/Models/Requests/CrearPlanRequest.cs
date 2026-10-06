@@ -11,4 +11,6 @@ public class CrearPlanRequest
     public int DiasGratis { get; set; }
     public int? Repeticiones { get; set; }
     public decimal? MontoPrimerCobro { get; set; }
+    public decimal? MontoPromo { get; set; }
+    public int? MesesPromo { get; set; }
 }

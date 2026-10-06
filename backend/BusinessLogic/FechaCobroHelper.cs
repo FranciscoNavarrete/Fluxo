@@ -2,9 +2,56 @@ namespace BusinessLogic;
 
 public static class CobroInicialHelper
 {
-    /// <summary>Con el primer pago hecho a mano, la suscripción cobra el monto mensual (no el inicial).</summary>
+    /// <summary>El plan tiene un precio promocional por los primeros meses.</summary>
+    public static bool TienePromo(Models.Entities.MpPlan plan) => plan.MontoPromo.HasValue && plan.MesesPromo is > 0;
+
+    /// <summary>Lo que se cobra por mes en el mes número <paramref name="mes"/> del plan (1 = el primero):
+    /// el precio promocional mientras dure la promoción y después el normal.</summary>
+    public static decimal MontoDelMes(Models.Entities.MpPlan plan, int mes) =>
+        TienePromo(plan) && mes <= plan.MesesPromo!.Value ? plan.MontoPromo!.Value : plan.Monto;
+
+    /// <summary>Número de mes del plan que corresponde al próximo cobro, dados los cobros ya realizados.</summary>
+    public static int MesDelProximoCobro(Models.Entities.MpSuscripcion suscripcion, int cobrosRealizados) =>
+        Math.Max(0, cobrosRealizados - suscripcion.CobrosBase) + 1;
+
+    /// <summary>Monto que tiene que tener la suscripción en MP para el próximo cobro. El primer cobro de una
+    /// suscripción nueva es el del alta (MontoInicial); después rige el precio del mes que toque.</summary>
+    public static decimal MontoEsperado(Models.Entities.MpPlan plan, Models.Entities.MpSuscripcion suscripcion, int cobrosRealizados)
+    {
+        if (suscripcion.CobrosBase == 0 && cobrosRealizados == 0) return MontoInicial(plan);
+        return MontoDelMes(plan, MesDelProximoCobro(suscripcion, cobrosRealizados));
+    }
+
+    /// <summary>Con el primer pago hecho a mano, la suscripción arranca en el mes 2 del plan (no cobra el inicial).</summary>
     public static decimal MontoDeSuscripcion(Models.Entities.MpPlan plan, bool primerPagoManual) =>
-        primerPagoManual ? plan.Monto : MontoInicial(plan);
+        primerPagoManual ? MontoDelMes(plan, 2) : MontoInicial(plan);
+
+    /// <summary>La promoción en curso de la suscripción, o null si el plan no tiene o ya terminó.</summary>
+    public static Models.DTOs.PromoDto? InfoPromo(
+        Models.Entities.MpPlan plan, Models.Entities.MpSuscripcion suscripcion, int cobrosRealizados, DateTime? proximoCobro)
+    {
+        if (!TienePromo(plan)) return null;
+        var mes = MesDelProximoCobro(suscripcion, cobrosRealizados);
+        var meses = plan.MesesPromo!.Value;
+        if (mes > meses) return null;
+
+        DateTime? Fecha(int periodos) => proximoCobro is null ? null
+            : plan.TipoFrecuencia == "months" ? proximoCobro.Value.AddMonths(plan.Frecuencia * periodos)
+            : proximoCobro.Value.AddDays(plan.Frecuencia * periodos);
+
+        return new Models.DTOs.PromoDto
+        {
+            MontoPromo = plan.MontoPromo!.Value,
+            MesesPromo = meses,
+            MesActual = Math.Max(1, mes),
+            MontoNormal = plan.Monto,
+            UltimoCobroPromo = Fecha(meses - mes),
+            NormalDesde = Fecha(meses - mes + 1),
+        };
+    }
+
+    /// <summary>CobrosBase de una suscripción nueva: con el primer mes pagado a mano, el primer cobro de MP es el mes 2.</summary>
+    public static int CobrosBaseInicial(bool primerPagoManual) => primerPagoManual ? -1 : 0;
 
     /// <summary>Con el primer pago hecho a mano, el primer cobro de la suscripción llega un período después del alta.</summary>
     public static DateTime PrimerCobro(Models.Entities.MpPlan plan, DateTime desde, bool primerPagoManual) =>
@@ -13,11 +60,11 @@ public static class CobroInicialHelper
             : FechaCobroHelper.PrimerCobro(desde, plan.DiasGratis);
 
     /// <summary>Monto con el que se crea la suscripción en MP: el del primer cobro si el plan lo define.</summary>
-    public static decimal MontoInicial(Models.Entities.MpPlan plan) => plan.MontoPrimerCobro ?? plan.Monto;
+    public static decimal MontoInicial(Models.Entities.MpPlan plan) => plan.MontoPrimerCobro ?? MontoDelMes(plan, 1);
 
-    /// <summary>Si el primer cobro difiere del mensual, hay que bajar el monto cuando ese cobro se aprueba.</summary>
+    /// <summary>Si el primer cobro difiere del que sigue, hay que ajustar el monto cuando ese cobro se aprueba.</summary>
     public static bool RequiereAjuste(Models.Entities.MpPlan plan)
-        => plan.MontoPrimerCobro.HasValue && plan.MontoPrimerCobro.Value != plan.Monto;
+        => MontoInicial(plan) != MontoDelMes(plan, 2);
 }
 
 public static class FechaCobroHelper

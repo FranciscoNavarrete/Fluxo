@@ -34,6 +34,9 @@ public interface IMpSuscripcionLogic
 
     Task<RespuestaResultado<bool>> CancelarAsync(CancelarSuscripcionRequest request, int usuarioId);
 
+    /// <summary>Cambia el plan de una suscripción activa: rige desde el próximo cobro y el plan nuevo cuenta sus meses desde ahí.</summary>
+    Task<RespuestaResultado<bool>> CambiarPlanAsync(int mpSuscripcionId, CambiarPlanRequest request, int usuarioId);
+
     Task<RespuestaResultado<bool>> ActualizarMedioPagoAsync(
         ActualizarMedioPagoRequest request, int usuarioId);
 

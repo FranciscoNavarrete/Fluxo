@@ -39,7 +39,7 @@ public class MpPlanRepository : IMpPlanRepository
         const string sql = """
             SELECT
                 MpPlanId, Nombre, Descripcion, Monto, Moneda,
-                TipoFrecuencia, Frecuencia, DiasGratis, Repeticiones, MontoPrimerCobro,
+                TipoFrecuencia, Frecuencia, DiasGratis, Repeticiones, MontoPrimerCobro, MontoPromo, MesesPromo,
                 MpPlanExternoId, Activo, FechaHoraCreacion, UsuarioCreacionId
             FROM mpplanes
             WHERE activo = TRUE
